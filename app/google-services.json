@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "299884546534",
+    "firebase_url": "https://go4sumbergedang-78702-default-rtdb.firebaseio.com",
+    "project_id": "go4sumbergedang-78702",
+    "storage_bucket": "go4sumbergedang-78702.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:299884546534:android:6b74a2a13f99da9e126e27",
+        "android_client_info": {
+          "package_name": "com.g4s.go4_driver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "299884546534-1b08n0168397nj6rtdts1r8sktn1sg0d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxGXty6jHj0zvPxIFozGVJK7PHiz_7oOE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "299884546534-1b08n0168397nj6rtdts1r8sktn1sg0d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:299884546534:android:f780100944f55626126e27",
+        "android_client_info": {
+          "package_name": "com.go4sumbergedang.go4"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "299884546534-1b08n0168397nj6rtdts1r8sktn1sg0d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxGXty6jHj0zvPxIFozGVJK7PHiz_7oOE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "299884546534-1b08n0168397nj6rtdts1r8sktn1sg0d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:299884546534:android:6fbf81ab5e4aee3e126e27",
+        "android_client_info": {
+          "package_name": "com.go4sumbergedang.toko"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "299884546534-1b08n0168397nj6rtdts1r8sktn1sg0d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxGXty6jHj0zvPxIFozGVJK7PHiz_7oOE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "299884546534-1b08n0168397nj6rtdts1r8sktn1sg0d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
