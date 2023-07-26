@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import com.g4s.go4_driver.R
 import com.g4s.go4_driver.services.LocationService
 import com.g4s.go4_driver.ui.fragment.HomeFragment
-import com.g4s.go4_driver.ui.fragment.TransaksiFragment
+import com.g4s.go4_driver.ui.fragment.PendapatanFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -23,11 +23,10 @@ class MainActivity : AppCompatActivity() {
                     ).commit()
                     return@OnNavigationItemSelectedListener true
                 }
-                R.id.nav_transaksi -> {
-
+                R.id.nav_pendapatan -> {
                     supportFragmentManager.beginTransaction().replace(
                         R.id.flFragment,
-                        TransaksiFragment()
+                        PendapatanFragment()
                     ).commit()
                     return@OnNavigationItemSelectedListener true
                 }
@@ -38,21 +37,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        if (!isGPSEnabled()) {
-            showGPSDisabledAlert()
-        }
+
         val navView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
         navView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener)
         moveToFragment(HomeFragment())
-        startLocationService()
-        if (intent.hasExtra("FRAGMENT_TAG")) {
-            val fragmentTag = intent.getStringExtra("FRAGMENT_TAG")
-            when (fragmentTag) {
-                "HomeFragment" -> {
-                    moveToFragment(HomeFragment())
-                }
-            }
-        }
     }
 
     private fun moveToFragment(fragment: Fragment) {

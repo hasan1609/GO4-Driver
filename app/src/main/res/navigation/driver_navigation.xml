@@ -11,8 +11,8 @@
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" />
     <fragment
-        android:id="@+id/transakieFragment"
-        android:name="com.g4s.go4_driver.ui.fragment.TransaksiFragment"
-        android:label="fragment_transaksi"
-        tools:layout="@layout/fragment_transaksi" />
+        android:id="@+id/pendapatanFragment"
+        android:name="com.g4s.go4_driver.ui.fragment.PendapatanFragment"
+        android:label="fragment_pendapatan"
+        tools:layout="@layout/fragment_pendapatan" />
 </navigation>
