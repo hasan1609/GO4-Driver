@@ -20,6 +20,7 @@ class LocationService : Service() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
+    private var idUser: String? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -34,6 +35,10 @@ class LocationService : Service() {
                     if (location != null) {
                         // Simpan data lokasi ke Firebase Realtime Database
                         saveLocationToDatabase(location.latitude, location.longitude)
+
+                        // Update the notification with the new location data
+                        val notification: Notification = buildNotification(location.latitude, location.longitude)
+                        startForeground(123, notification)
                     }
                 }
             }
@@ -41,12 +46,23 @@ class LocationService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startLocationUpdates()
+        when (intent?.action) {
+            "START_LOCATION_SERVICE" -> {
+                // Retrieve the user ID from the intent extra
+                idUser = intent.getStringExtra("ID_USER_EXTRA")
 
-        // Memulai layanan sebagai foreground service
-        val notification: Notification = buildNotification()
-        startForeground(123, notification)
-
+                // Memulai layanan setelah izin lokasi diberikan dan GPS diaktifkan
+                startLocationUpdates()
+                val notification: Notification = buildNotification(0.0, 0.0)
+                startForeground(123, notification)
+            }
+            "STOP_LOCATION_SERVICE" -> {
+                // Menghentikan layanan jika tindakan "STOP_LOCATION_SERVICE" diterima
+                stopLocationUpdates()
+                stopForeground(true)
+                stopSelf()
+            }
+        }
         return START_STICKY
     }
 
@@ -83,6 +99,10 @@ class LocationService : Service() {
             Looper.getMainLooper()
         )
     }
+    override fun onDestroy() {
+        stopLocationUpdates()
+        super.onDestroy()
+    }
 
     private fun stopLocationUpdates() {
         fusedLocationClient.removeLocationUpdates(locationCallback)
@@ -91,7 +111,7 @@ class LocationService : Service() {
     private fun saveLocationToDatabase(latitude: Double, longitude: Double) {
         // Simpan data lokasi ke Firebase Realtime Database
         val database = FirebaseDatabase.getInstance()
-        val locationRef = database.getReference("locations").child("id_user")
+        val locationRef = database.getReference("locations").child(idUser!!)
         locationRef.child("latitude").setValue(latitude)
         locationRef.child("longitude").setValue(longitude)
     }
@@ -110,13 +130,15 @@ class LocationService : Service() {
     }
 
     // Membangun notifikasi yang akan digunakan untuk foreground service
-    private fun buildNotification(): Notification {
+    private fun buildNotification(latitude: Double, longitude: Double): Notification {
         val notificationIntent = Intent(this, MainActivity::class.java) // Ganti YourActivity dengan activity tujuan notifikasi
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 
+        val notificationText = "Latitude: $latitude, Longitude: $longitude"
+
         val notification = NotificationCompat.Builder(this, "channel_id")
             .setContentTitle("Foreground Service")
-            .setContentText("Service berjalan di latar belakang")
+            .setContentText(notificationText)
             .setSmallIcon(R.drawable.ic_home) // Ganti dengan ikon notifikasi yang sesuai
             .setContentIntent(pendingIntent)
             .build()
