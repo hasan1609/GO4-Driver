@@ -47,11 +47,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        if (isLocationPermissionGranted()) {
-
-        } else {
-            requestLocationPermission()
-        }
         val navView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
         navView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener)
         moveToFragment(HomeFragment())
@@ -63,34 +58,4 @@ class MainActivity : AppCompatActivity() {
         fragmentTrans.commit()
     }
 
-    private fun isLocationPermissionGranted(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun requestLocationPermission() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-            locationPermissionCode
-        )
-    }
-
-    // Fungsi ini akan dipanggil setelah pengguna menanggapi permintaan izin
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        if (requestCode == locationPermissionCode) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Izin diberikan, lakukan operasi selanjutnya di sini
-                // ...
-            } else {
-                // Izin ditolak, berikan tanggapan atau tindakan sesuai kebutuhan aplikasi
-            }
-        }
-    }
 }

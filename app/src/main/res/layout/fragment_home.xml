@@ -52,14 +52,12 @@
                         android:textSize="18sp" />
                 </LinearLayout>
             </LinearLayout>
-            <Switch
+            <ImageView
                 android:layout_marginEnd="15dp"
                 android:id="@+id/status_driver"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:thumb="@drawable/ic_thumb"
-                android:track="@drawable/bg_switch"
-                tools:ignore="UseSwitchCompatOrMaterialXml" />
+                android:src="@drawable/ic_switch_off"/>
         </LinearLayout>
         <TextView
             android:layout_centerInParent="true"

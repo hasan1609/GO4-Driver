@@ -3,16 +3,31 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/bg_border_foto.xml" value="0.1" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/bg_bottom_sheet.xml" value="0.1" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/bg_button.xml" value="0.1155" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/bg_edttext.xml" value="0.1155" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/bg_switch.xml" value="0.1" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_arrow_forward.xml" value="0.1" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_file.xml" value="0.1" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_home.xml" value="0.137" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_logout.xml" value="0.1155" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_plus.xml" value="0.1" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_rectangle_32__1_.xml" value="0.1" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_thumb.xml" value="0.137" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_vector__8_.xml" value="0.137" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/rounded_button.xml" value="0.1155" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/switch_track_ff.xml" value="0.1" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/switch_track_off.xml" value="0.1" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/switch_track_on.xml" value="0.1" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/activity_detail_profile.xml" value="0.209375" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/activity_login.xml" value="0.18" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/activity_main.xml" value="0.21979166666666666" />
-        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/fragment_home.xml" value="0.2" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/activity_profile.xml" value="0.2234375" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/activity_ulasan.xml" value="0.2234375" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/bottom_sheet_file_picker_fragment.xml" value="0.1" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/fragment_home.xml" value="0.25" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/fragment_pendapatan.xml" value="0.21" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/fragment_profile.xml" value="0.20572916666666666" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/fragment_transaksi.xml" value="0.2234375" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/menu/bottom_navigation_menu.xml" value="0.21979166666666666" />
