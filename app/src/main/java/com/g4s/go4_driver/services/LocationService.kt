@@ -21,6 +21,7 @@ class LocationService : Service() {
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
     private var idUser: String? = null
+    private var fcmUser: String? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -48,13 +49,17 @@ class LocationService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             "START_LOCATION_SERVICE" -> {
-                // Retrieve the user ID from the intent extra
+                // Retrieve the user ID and FCM code from the intent extra
                 idUser = intent.getStringExtra("ID_USER_EXTRA")
+                fcmUser = intent.getStringExtra("FCM_USER_EXTRA")
 
                 // Memulai layanan setelah izin lokasi diberikan dan GPS diaktifkan
                 startLocationUpdates()
                 val notification: Notification = buildNotification(0.0, 0.0)
                 startForeground(123, notification)
+
+                // Update user data with status and kodeFcm
+                updateUserData(idUser, fcmUser, "active") // Change status value as needed
             }
             "STOP_LOCATION_SERVICE" -> {
                 // Menghentikan layanan jika tindakan "STOP_LOCATION_SERVICE" diterima
@@ -111,7 +116,7 @@ class LocationService : Service() {
     private fun saveLocationToDatabase(latitude: Double, longitude: Double) {
         // Simpan data lokasi ke Firebase Realtime Database
         val database = FirebaseDatabase.getInstance()
-        val locationRef = database.getReference("locations").child(idUser!!)
+        val locationRef = database.getReference("driver_active").child(idUser!!)
         locationRef.child("latitude").setValue(latitude)
         locationRef.child("longitude").setValue(longitude)
     }
@@ -144,5 +149,25 @@ class LocationService : Service() {
             .build()
 
         return notification
+    }
+
+    private fun updateUserData(idUser: String?, kodeFcm: String?, status: String) {
+        val database = FirebaseDatabase.getInstance()
+        val userRef = database.getReference("driver_active").child(idUser!!)
+
+        val userData = HashMap<String, Any>()
+        userData["latitude"] = 0.0 // Initial latitude value
+        userData["longitude"] = 0.0 // Initial longitude value
+        userData["status"] = status
+        userData["kodeFcm"] = kodeFcm!!
+
+        userRef.updateChildren(userData)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // User data update successful
+                } else {
+                    // User data update failed
+                }
+            }
     }
 }

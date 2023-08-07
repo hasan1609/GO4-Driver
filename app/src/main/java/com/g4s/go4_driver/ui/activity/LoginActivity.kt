@@ -73,6 +73,7 @@ class LoginActivity : AppCompatActivity(), AnkoLogger {
                             if (response.isSuccessful){
                                 if (response.body()!!.status == true) {
                                     sessionManager.setToken(response.body()!!.token!!)
+                                    sessionManager.setFcm(token.toString())
                                     sessionManager.setId(response.body()!!.data!!.idUser!!)
                                     sessionManager.setNamaDriver(response.body()!!.data!!.nama!!)
                                     sessionManager.setLogin(true)

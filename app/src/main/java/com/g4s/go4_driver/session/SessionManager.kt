@@ -54,6 +54,17 @@ class SessionManager(private val context: Context) {
         return Pref?.getString(isNamaDriver,"")
     }
 
+    private val isFcm = "isFcm"
+    fun setFcm(check: String){
+        editor?.putString(isFcm,check)
+        editor?.commit()
+    }
+
+    fun getFcm():String?
+    {
+        return Pref?.getString(isFcm,"")
+    }
+
     fun clearSession() {
         val editor = Pref?.edit()
         editor?.clear()

@@ -20,6 +20,9 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="m">
         <activity
+            android:name=".ui.activity.ChatActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.UlasanActivity"
             android:exported="false" />
         <activity
@@ -42,6 +45,14 @@
             android:name=".services.LocationService"
             android:enabled="true"
             android:exported="false" />
+
+        <service
+            android:name=".services.NotificationServices"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

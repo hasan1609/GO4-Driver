@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.g4s.go4_driver.R
 import com.g4s.go4_driver.services.LocationService
+import com.g4s.go4_driver.ui.fragment.ChatFragment
 import com.g4s.go4_driver.ui.fragment.HomeFragment
 import com.g4s.go4_driver.ui.fragment.PendapatanFragment
 import com.google.android.gms.common.api.ResolvableApiException
@@ -37,6 +38,13 @@ class MainActivity : AppCompatActivity() {
                     supportFragmentManager.beginTransaction().replace(
                         R.id.flFragment,
                         PendapatanFragment()
+                    ).commit()
+                    return@OnNavigationItemSelectedListener true
+                }
+                R.id.nav_chat -> {
+                    supportFragmentManager.beginTransaction().replace(
+                        R.id.flFragment,
+                        ChatFragment()
                     ).commit()
                     return@OnNavigationItemSelectedListener true
                 }

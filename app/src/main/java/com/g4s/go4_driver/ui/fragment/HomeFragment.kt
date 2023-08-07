@@ -39,7 +39,7 @@ class HomeFragment : Fragment() {
         sessionManager = SessionManager(requireActivity())
 
         val database = FirebaseDatabase.getInstance()
-        val locationRef = database.getReference("locations").child(sessionManager.getId().toString())
+        val locationRef = database.getReference("driver_active").child(sessionManager.getId().toString())
 
         // Tambahkan listener untuk memeriksa keberadaan idUser di database
         locationRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -72,16 +72,28 @@ class HomeFragment : Fragment() {
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
                         // Izin background location sudah diberikan, maka kita dapat memulai layanan
-                        startLocationService()
-                        binding.statusDriver.setImageResource(R.drawable.ic_switch_on)
+                        if (isGPSEnabled()) {
+                            // GPS aktif, maka mulai layanan lokasi
+                            startLocationService()
+                            binding.statusDriver.setImageResource(R.drawable.ic_switch_on)
+                        } else {
+                            // GPS tidak aktif, tampilkan dialog untuk mengaktifkannya
+                            requestGPSEnabling()
+                        }
                     } else {
                         // Izin background location belum diberikan, maka kita perlu meminta izin kepada pengguna
                         requestBackgroundLocationPermission()
                     }
                 } else {
                     // Untuk Android versi sebelum 10 (Q), tidak perlu izin background location
-                    startLocationService()
-                    binding.statusDriver.setImageResource(R.drawable.ic_switch_on)
+                    if (isGPSEnabled()) {
+                        // GPS aktif, maka mulai layanan lokasi
+                        startLocationService()
+                        binding.statusDriver.setImageResource(R.drawable.ic_switch_on)
+                    } else {
+                        // GPS tidak aktif, tampilkan dialog untuk mengaktifkannya
+                        requestGPSEnabling()
+                    }
                 }
             }
         }
@@ -91,6 +103,7 @@ class HomeFragment : Fragment() {
     private fun startLocationService() {
         val serviceIntent = Intent(requireActivity(), LocationService::class.java)
         serviceIntent.putExtra("ID_USER_EXTRA", sessionManager.getId().toString())
+        serviceIntent.putExtra("FCM_USER_EXTRA", sessionManager.getFcm().toString())
         serviceIntent.action = "START_LOCATION_SERVICE"
         requireActivity().startForegroundService(serviceIntent)
     }
@@ -104,7 +117,7 @@ class HomeFragment : Fragment() {
 
     private fun deleteLocationDataFromDatabase() {
         val database = FirebaseDatabase.getInstance()
-        val cartReference = database.reference.child("locations").child(sessionManager.getId().toString())
+        val cartReference = database.reference.child("driver_active").child(sessionManager.getId().toString())
         cartReference.removeValue()
             .addOnSuccessListener {
                 toast("Berhasil mematikan")
@@ -151,5 +164,24 @@ class HomeFragment : Fragment() {
             }
         }
         return false
+    }
+
+    // Fungsi untuk memeriksa apakah GPS aktif
+    private fun isGPSEnabled(): Boolean {
+        val locationManager = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+    }
+
+    // Fungsi untuk meminta pengguna mengaktifkan GPS
+    private fun requestGPSEnabling() {
+        val alertDialog = AlertDialog.Builder(requireContext())
+        alertDialog.setTitle("Aktifkan GPS")
+        alertDialog.setMessage("Harap aktifkan GPS untuk menggunakan fitur ini.")
+        alertDialog.setPositiveButton("OK") { _, _ ->
+            // Buka aktivitas pengaturan lokasi agar pengguna dapat mengaktifkan GPS
+            val locationSettingsIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            startActivityForResult(locationSettingsIntent, REQUEST_LOCATION_SETTINGS)
+        }
+        alertDialog.show()
     }
 }
