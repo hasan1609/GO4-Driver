@@ -57,7 +57,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val navView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
         navView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener)
-        moveToFragment(HomeFragment())
+        if (intent?.action == "OPEN_BOOKING_ACTION_FRAGMENT") {
+            val fragmentBundle = intent.getBundleExtra("fragment_bundle")
+            if (fragmentBundle != null) {
+                moveToFragment(HomeFragment().apply {
+                    arguments = fragmentBundle
+                })
+            }
+        } else {
+            moveToFragment(HomeFragment())
+        }
     }
 
     private fun moveToFragment(fragment: Fragment) {

@@ -138,9 +138,7 @@ class LocationService : Service() {
     private fun buildNotification(latitude: Double, longitude: Double): Notification {
         val notificationIntent = Intent(this, MainActivity::class.java) // Ganti YourActivity dengan activity tujuan notifikasi
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
-
         val notificationText = "Latitude: $latitude, Longitude: $longitude"
-
         val notification = NotificationCompat.Builder(this, "channel_id")
             .setContentTitle("Foreground Service")
             .setContentText(notificationText)

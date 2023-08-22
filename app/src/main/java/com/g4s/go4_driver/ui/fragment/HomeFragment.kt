@@ -97,6 +97,28 @@ class HomeFragment : Fragment() {
                 }
             }
         }
+
+        val bookingId = arguments?.getString("booking_id")
+        val action = arguments?.getString("action")
+
+//        val action = arguments!!.getString("action") ?: ""
+
+
+//        if (action == "accept") {
+//            actionButton.text = "Accept"
+//            actionButton.setOnClickListener {
+//                // Lakukan tindakan "Accept" di sini
+//                // Misalnya, kirim permintaan ke server
+//                // dan tampilkan pesan sukses
+//            }
+//        } else if (action == "reject") {
+//            actionButton.text = "Reject"
+//            actionButton.setOnClickListener {
+//                // Lakukan tindakan "Reject" di sini
+//                // Misalnya, kirim permintaan ke server
+//                // dan tampilkan pesan sukses
+//            }
+//        }
         return binding.root
     }
 
