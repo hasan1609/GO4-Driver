@@ -3,6 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable-v24/ic_car.xml" value="0.1" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable-v24/ic_food.xml" value="0.1" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable-v24/ic_motor.xml" value="0.1" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/back.xml" value="0.168" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/bg_border_foto.xml" value="0.1" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/bg_bottom_sheet.xml" value="0.1" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/bg_button.xml" value="0.1155" />
@@ -12,11 +16,15 @@
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/bg_switch.xml" value="0.1" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/bg_to_chat.xml" value="0.1155" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_arrow_forward.xml" value="0.1" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_dot.xml" value="0.168" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_file.xml" value="0.1" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_food.xml" value="0.168" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_home.xml" value="0.137" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_logout.xml" value="0.1155" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_pinmap.xml" value="0.168" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_plus.xml" value="0.1" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_rectangle_32__1_.xml" value="0.1" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_start_order.xml" value="0.168" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_thumb.xml" value="0.137" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/ic_vector__8_.xml" value="0.137" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/rounded_button.xml" value="0.1155" />
@@ -25,11 +33,13 @@
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/drawable/switch_track_on.xml" value="0.1" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/activity_chat.xml" value="0.21" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/activity_detail_profile.xml" value="0.209375" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/activity_detail_riwayat_order.xml" value="0.2234375" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/activity_login.xml" value="0.18" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/activity_main.xml" value="0.21979166666666666" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/activity_profile.xml" value="0.2234375" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/activity_ulasan.xml" value="0.2234375" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/bottom_sheet_file_picker_fragment.xml" value="0.1" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/custom_alert_recive_booking.xml" value="0.25" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/custom_app_bar.xml" value="0.22" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/fragment_chat.xml" value="0.25" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/fragment_home.xml" value="0.25" />
@@ -39,6 +49,10 @@
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/item_chat.xml" value="0.2234375" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/item_chat_form.xml" value="0.18" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/item_chat_to.xml" value="0.14" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/item_header_rv.xml" value="0.1" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/list_produk_log_order.xml" value="0.89375" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/list_riwayat_order_driver.xml" value="0.33" />
+        <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/layout/list_riwayat_order_resto.xml" value="0.22" />
         <entry key="..\:/xampp/htdocs/go4-sumbergedang/android/GO4Driver/app/src/main/res/menu/bottom_navigation_menu.xml" value="0.21979166666666666" />
       </map>
     </option>

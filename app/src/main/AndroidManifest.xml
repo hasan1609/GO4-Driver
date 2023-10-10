@@ -20,6 +20,9 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="m">
         <activity
+            android:name=".ui.activity.DetailRiwayatOrderActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.ChatActivity"
             android:exported="false" />
         <activity
@@ -33,7 +36,8 @@
             android:exported="false" />
         <activity
             android:name=".ui.activity.LoginActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -45,7 +49,6 @@
             android:name=".services.LocationService"
             android:enabled="true"
             android:exported="false" />
-
         <service
             android:name=".services.NotificationServices"
             android:exported="true">

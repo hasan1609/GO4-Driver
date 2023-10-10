@@ -24,20 +24,17 @@ class NotificationServices : FirebaseMessagingService() {
         val notificationTitle = remoteMessage.notification?.title
         val notificationBody = remoteMessage.notification?.body
         val bookingId = remoteMessage.data["booking_id"]
-        val action = remoteMessage.data["action"]
 
         // Display the notification to the user
         if (notificationTitle != null && notificationBody != null) {
-            if (action != "") {
+            if (bookingId != null) {
                 // Navigasi ke BookingActionFragment dengan data
                 val bundle = Bundle()
                 bundle.putString("booking_id", bookingId)
-                bundle.putString("action", action)
-
                 val intent = Intent(this, MainActivity::class.java)
                 intent.putExtra("fragment_bundle", bundle)
                 intent.action = "OPEN_BOOKING_ACTION_FRAGMENT" // Tambahkan baris ini
-                val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT)
+                val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT)
                 val notificationBuilder = NotificationCompat.Builder(this, "channel_id")
                     .setSmallIcon(R.drawable.ic_launcher_foreground)
                     .setContentTitle("New Booking Request")
@@ -47,10 +44,10 @@ class NotificationServices : FirebaseMessagingService() {
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
 
                 val notificationManager = NotificationManagerCompat.from(this)
-                notificationManager.notify(1, notificationBuilder.build())
+                notificationManager.notify(0, notificationBuilder.build())
             } else {
                 // Notifikasi tanpa tindakan
-                showNotification(notificationTitle, notificationBody)
+//                showNotification(notificationTitle, notificationBody)
             }
         }
     }
@@ -63,28 +60,6 @@ class NotificationServices : FirebaseMessagingService() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
 
         val notificationManager = NotificationManagerCompat.from(this)
-        notificationManager.notify(1, notificationBuilder.build())
-    }
-
-    private fun showNotificationWithAction(bookingId: String?, action: String?, pendingIntent: PendingIntent) {
-        val notificationTitle = "Booking Request"
-        val notificationMessage = "You have a new booking request. ID: $bookingId"
-
-        val builder = NotificationCompat.Builder(this, "channel_id")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(notificationTitle)
-            .setContentText(notificationMessage)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-
-//        if (action == "accept") {
-//            builder.addAction(R.drawable.ic_accept, "Accept", pendingIntent)
-//        } else if (action == "reject") {
-//            builder.addAction(R.drawable.ic_reject, "Reject", pendingIntent)
-//        }
-
-        val notificationManager = NotificationManagerCompat.from(this)
-        notificationManager.notify(1, builder.build())
+        notificationManager.notify(0, notificationBuilder.build())
     }
 }

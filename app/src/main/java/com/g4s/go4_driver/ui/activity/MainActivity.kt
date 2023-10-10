@@ -63,6 +63,7 @@ class MainActivity : AppCompatActivity() {
                 moveToFragment(HomeFragment().apply {
                     arguments = fragmentBundle
                 })
+                intent.action = null
             }
         } else {
             moveToFragment(HomeFragment())
@@ -74,5 +75,6 @@ class MainActivity : AppCompatActivity() {
         fragmentTrans.replace(R.id.flFragment, fragment)
         fragmentTrans.commit()
     }
+
 
 }

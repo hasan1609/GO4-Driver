@@ -19,14 +19,23 @@ import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import com.g4s.go4_driver.R
 import com.g4s.go4_driver.databinding.FragmentHomeBinding
+import com.g4s.go4_driver.model.ResponseBooking
 import com.g4s.go4_driver.services.LocationService
 import com.g4s.go4_driver.session.SessionManager
+import com.g4s.go4_driver.webservice.ApiClient
 import com.google.firebase.database.*
+import kotlinx.android.synthetic.main.custom_alert_recive_booking.view.*
+import org.jetbrains.anko.AnkoLogger
+import org.jetbrains.anko.info
 import org.jetbrains.anko.support.v4.toast
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), AnkoLogger {
     private lateinit var binding: FragmentHomeBinding
     lateinit var sessionManager: SessionManager
+    var api = ApiClient.instance()
     private val REQUEST_BACKGROUND_LOCATION_PERMISSION = 1005
     private val REQUEST_LOCATION_SETTINGS = 1004
 
@@ -99,26 +108,11 @@ class HomeFragment : Fragment() {
         }
 
         val bookingId = arguments?.getString("booking_id")
-        val action = arguments?.getString("action")
 
-//        val action = arguments!!.getString("action") ?: ""
+        if(bookingId != null){
+            checkBooking(bookingId.toString())
+        }
 
-
-//        if (action == "accept") {
-//            actionButton.text = "Accept"
-//            actionButton.setOnClickListener {
-//                // Lakukan tindakan "Accept" di sini
-//                // Misalnya, kirim permintaan ke server
-//                // dan tampilkan pesan sukses
-//            }
-//        } else if (action == "reject") {
-//            actionButton.text = "Reject"
-//            actionButton.setOnClickListener {
-//                // Lakukan tindakan "Reject" di sini
-//                // Misalnya, kirim permintaan ke server
-//                // dan tampilkan pesan sukses
-//            }
-//        }
         return binding.root
     }
 
@@ -205,5 +199,79 @@ class HomeFragment : Fragment() {
             startActivityForResult(locationSettingsIntent, REQUEST_LOCATION_SETTINGS)
         }
         alertDialog.show()
+    }
+
+    private fun checkBooking(idBooking: String){
+        api.getBookingById(idBooking).enqueue(object : Callback<ResponseBooking> {
+            override fun onResponse(
+                call: Call<ResponseBooking>,
+                response: Response<ResponseBooking>
+            ) {
+                try {
+                    if (response.isSuccessful) {
+                        val data = response.body()
+                        if (data!!.status == true) {
+                            showAlertReciveOrder(
+                                data.data!!.idBooking.toString(),
+                                data.data.idBooking.toString(),
+                                data.data.total.toString(),
+                                data.jarak.toString(),
+                                data.data.alamatTujuan.toString(),
+                            )
+                        }
+                    } else {
+                        toast("gagal mendapatkan response")
+                    }
+                } catch (e: Exception) {
+                    info { "hasan ${e.message}" }
+                    toast(e.message.toString())
+                }
+            }
+            override fun onFailure(call: Call<ResponseBooking>, t: Throwable) {
+                if (isAdded) {
+                    info { "hasan ${t.message}" }
+                    toast(t.message.toString())
+                }
+            }
+        })
+    }
+
+    // menampilkan alert order masuk
+    private fun showAlertReciveOrder(kdBooking: String, jenis: String, total: String, jarak: String, tujuan: String,){
+        val builder = AlertDialog.Builder(context)
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.custom_alert_recive_booking, null)
+
+        val txtKode = dialogView.txt_kode
+        val txtJenisOrder = dialogView.txt_jenis_order
+        val txtTotal = dialogView.txt_total
+        val txtJarak = dialogView.txt_jarak
+        val txtTujuan = dialogView.txt_tujuan
+        val btnTerima = dialogView.btn_terima
+        val btnTolak = dialogView.btn_tolak
+
+        txtKode.text = kdBooking
+        txtJenisOrder.text = jenis
+        txtTotal.text = total
+        txtJarak.text = jarak + "KM"
+        txtTujuan.text = tujuan
+
+        // Menambahkan view yang telah diinisialisasi ke dalam builder
+        builder.setView(dialogView)
+
+        // Membuat dan menampilkan alert dialog
+        val alertDialog = builder.create()
+        alertDialog.show()
+
+        // Mengatur aksi ketika tombol Terima diklik
+        btnTerima.setOnClickListener {
+            // Lakukan aksi yang diinginkan ketika tombol Terima diklik
+            alertDialog.dismiss() // Tutup alert dialog setelah aksi selesai
+        }
+
+        // Mengatur aksi ketika tombol Tolak diklik
+        btnTolak.setOnClickListener {
+            // Lakukan aksi yang diinginkan ketika tombol Tolak diklik
+            alertDialog.dismiss() // Tutup alert dialog setelah aksi selesai
+        }
     }
 }

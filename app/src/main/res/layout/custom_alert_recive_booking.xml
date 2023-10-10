@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:elevation="4dp"
+    app:cardCornerRadius="10dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="25dp"
+        android:paddingVertical="10dp"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Order Masuk"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:padding="5dp"/>
+        <TextView
+            android:layout_marginTop="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="Kode Transaksi :"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/txt_kode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="jfkdjfkdjfdjfk "
+            android:textSize="14sp"/>
+        <TextView
+            android:layout_marginTop="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="Jenis Pesanan :"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/txt_jenis_order"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Resto"
+            android:textSize="14sp"/>
+        <TextView
+            android:layout_marginTop="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="Total Pesanan :"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/txt_total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="40.000"
+            android:textSize="14sp"/>
+        <TextView
+            android:layout_marginTop="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="Jarak :"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/txt_jarak"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="30 KM "
+            android:textSize="14sp"/>
+        <TextView
+            android:layout_marginTop="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Alamat Tujuan : "
+            android:textStyle="bold"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/txt_tujuan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="fdfkjdklfjd jghfjhgf fdjghjfdg fdjghjfdg fdjghjfdg"
+            android:textSize="14sp"/>
+        <LinearLayout
+            android:layout_marginTop="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:layout_weight="1"
+                android:id="@+id/btn_terima"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Terima"
+                android:layout_marginEnd="8dp"/>
+            <Button
+                android:id="@+id/btn_tolak"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Tolak"
+                android:backgroundTint="@color/red"/>
+        </LinearLayout>
+
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

@@ -68,6 +68,16 @@
             android:layout_marginTop="20dp"
             android:textSize="16sp"/>
 
+        <TextView
+            android:id="@+id/txt_kosong"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Keranjang Anda Masih Kosong"
+            android:textSize="14sp"
+            android:textStyle="normal"
+            android:visibility="gone"
+            android:gravity="center"/>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_riwayat"
             android:layout_width="match_parent"
