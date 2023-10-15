@@ -11,6 +11,19 @@
         tools:context=".ui.fragment.HomeFragment">
 
         <LinearLayout
+            android:id="@+id/peta"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <fragment
+                android:id="@+id/mapview"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context=".ui.fragment.HomeFragment"/>
+
+        </LinearLayout>
+        <LinearLayout
             android:id="@+id/ly_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -59,21 +72,6 @@
                 android:layout_height="match_parent"
                 android:src="@drawable/ic_switch_off"/>
         </LinearLayout>
-        <TextView
-            android:layout_centerInParent="true"
-            android:id="@+id/lat"
-            android:gravity="center"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="la" />
-
-        <TextView
-            android:gravity="center"
-            android:layout_below="@+id/lat"
-            android:id="@+id/longi"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="la" />
 
     </RelativeLayout>
 </layout>

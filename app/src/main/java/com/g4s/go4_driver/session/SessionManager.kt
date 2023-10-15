@@ -65,6 +65,28 @@ class SessionManager(private val context: Context) {
         return Pref?.getString(isFcm,"")
     }
 
+    private val isType = "isType"
+    fun setType(check: String){
+        editor?.putString(isType,check)
+        editor?.commit()
+    }
+
+    fun getType():String?
+    {
+        return Pref?.getString(isType,"")
+    }
+
+    private val isFoto = "isFoto"
+    fun setFoto(check: String){
+        editor?.putString(isFoto,check)
+        editor?.commit()
+    }
+
+    fun getFoto():String?
+    {
+        return Pref?.getString(isFoto,"")
+    }
+
     fun clearSession() {
         val editor = Pref?.edit()
         editor?.clear()

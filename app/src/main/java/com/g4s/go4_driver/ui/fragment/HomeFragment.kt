@@ -3,9 +3,13 @@ package com.g4s.go4_driver.ui.fragment
 import android.Manifest
 import android.app.ActivityManager
 import android.app.AlertDialog
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.location.Geocoder
+import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
@@ -23,6 +27,13 @@ import com.g4s.go4_driver.model.ResponseBooking
 import com.g4s.go4_driver.services.LocationService
 import com.g4s.go4_driver.session.SessionManager
 import com.g4s.go4_driver.webservice.ApiClient
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.maps.*
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.custom_alert_recive_booking.view.*
 import org.jetbrains.anko.AnkoLogger
@@ -32,12 +43,20 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class HomeFragment : Fragment(), AnkoLogger {
+class HomeFragment : Fragment(), AnkoLogger, OnMapReadyCallback {
+
     private lateinit var binding: FragmentHomeBinding
     lateinit var sessionManager: SessionManager
     var api = ApiClient.instance()
+    private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
+    private lateinit var placesClient: PlacesClient
+    private lateinit var geocoder: Geocoder
+    private val permissionCode = 101
     private val REQUEST_BACKGROUND_LOCATION_PERMISSION = 1005
     private val REQUEST_LOCATION_SETTINGS = 1004
+    private lateinit var mMap: GoogleMap // Google Maps objek
+    private var locationServiceIntent: Intent? = null // Intent untuk LocationService
+    private var currentLocationMarker: Marker? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,9 +75,13 @@ class HomeFragment : Fragment(), AnkoLogger {
                 // Jika data untuk idUser tersedia, aktifkan Switch
                 if (snapshot.exists()) {
                     binding.statusDriver.setImageResource(R.drawable.ic_switch_on)
+                    binding.txtStatus.text = "On"
+                    binding.txtStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary_color))
                     startLocationService()
                 } else {
                     binding.statusDriver.setImageResource(R.drawable.ic_switch_off)
+                    binding.txtStatus.text = "Off"
+                    binding.txtStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
                 }
             }
 
@@ -67,11 +90,35 @@ class HomeFragment : Fragment(), AnkoLogger {
             }
         })
 
+        // Inisialisasi Google Maps
+        val mapFragment = childFragmentManager.findFragmentById(R.id.mapview) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+
+        // Register receiver for location updates
+        val locationUpdateReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == "LOCATION_UPDATE") {
+                    val latitude = intent.getDoubleExtra("latitude", 0.0)
+                    val longitude = intent.getDoubleExtra("longitude", 0.0)
+
+                    // Update peta dengan lokasi terbaru
+                    updateMapLocation(latitude, longitude)
+                }
+            }
+        }
+
+        val filter = IntentFilter("LOCATION_UPDATE")
+        requireActivity().registerReceiver(locationUpdateReceiver, filter)
+
+        binding.namaDriver.text = sessionManager.getNamaDriver()
         binding.statusDriver.setOnClickListener {
             if (isServiceRunning(LocationService::class.java)) {
                 // Layanan sedang berjalan, berarti kita akan mematikan layanan
                 stopLocationService()
                 binding.statusDriver.setImageResource(R.drawable.ic_switch_off)
+                binding.txtStatus.text = "Off"
+                binding.txtStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.grey))
+
             } else {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     // Untuk Android versi 10 (Q) dan di atasnya, periksa ketersediaan izin background location
@@ -85,6 +132,8 @@ class HomeFragment : Fragment(), AnkoLogger {
                             // GPS aktif, maka mulai layanan lokasi
                             startLocationService()
                             binding.statusDriver.setImageResource(R.drawable.ic_switch_on)
+                            binding.txtStatus.text = "On"
+                            binding.txtStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary_color))
                         } else {
                             // GPS tidak aktif, tampilkan dialog untuk mengaktifkannya
                             requestGPSEnabling()
@@ -109,7 +158,7 @@ class HomeFragment : Fragment(), AnkoLogger {
 
         val bookingId = arguments?.getString("booking_id")
 
-        if(bookingId != null){
+        if (bookingId != null) {
             checkBooking(bookingId.toString())
         }
 
@@ -117,18 +166,20 @@ class HomeFragment : Fragment(), AnkoLogger {
     }
 
     private fun startLocationService() {
-        val serviceIntent = Intent(requireActivity(), LocationService::class.java)
-        serviceIntent.putExtra("ID_USER_EXTRA", sessionManager.getId().toString())
-        serviceIntent.putExtra("FCM_USER_EXTRA", sessionManager.getFcm().toString())
-        serviceIntent.action = "START_LOCATION_SERVICE"
-        requireActivity().startForegroundService(serviceIntent)
+        locationServiceIntent = Intent(requireActivity(), LocationService::class.java)
+        locationServiceIntent?.putExtra("ID_USER_EXTRA", sessionManager.getId().toString())
+        locationServiceIntent?.putExtra("FCM_USER_EXTRA", sessionManager.getFcm().toString())
+        locationServiceIntent?.putExtra("TYPE_USER_EXTRA", sessionManager.getType().toString())
+        locationServiceIntent?.action = "START_LOCATION_SERVICE"
+        requireActivity().startForegroundService(locationServiceIntent)
     }
 
     private fun stopLocationService() {
-        val stopServiceIntent = Intent(requireActivity(), LocationService::class.java)
-        stopServiceIntent.action = "STOP_LOCATION_SERVICE"
-        requireActivity().stopService(stopServiceIntent)
-        deleteLocationDataFromDatabase()
+        if (locationServiceIntent != null) {
+            locationServiceIntent?.action = "STOP_LOCATION_SERVICE"
+            requireActivity().stopService(locationServiceIntent)
+            deleteLocationDataFromDatabase()
+        }
     }
 
     private fun deleteLocationDataFromDatabase() {
@@ -201,7 +252,7 @@ class HomeFragment : Fragment(), AnkoLogger {
         alertDialog.show()
     }
 
-    private fun checkBooking(idBooking: String){
+    private fun checkBooking(idBooking: String) {
         api.getBookingById(idBooking).enqueue(object : Callback<ResponseBooking> {
             override fun onResponse(
                 call: Call<ResponseBooking>,
@@ -227,6 +278,7 @@ class HomeFragment : Fragment(), AnkoLogger {
                     toast(e.message.toString())
                 }
             }
+
             override fun onFailure(call: Call<ResponseBooking>, t: Throwable) {
                 if (isAdded) {
                     info { "hasan ${t.message}" }
@@ -237,7 +289,13 @@ class HomeFragment : Fragment(), AnkoLogger {
     }
 
     // menampilkan alert order masuk
-    private fun showAlertReciveOrder(kdBooking: String, jenis: String, total: String, jarak: String, tujuan: String,){
+    private fun showAlertReciveOrder(
+        kdBooking: String,
+        jenis: String,
+        total: String,
+        jarak: String,
+        tujuan: String,
+    ) {
         val builder = AlertDialog.Builder(context)
         val dialogView = LayoutInflater.from(context).inflate(R.layout.custom_alert_recive_booking, null)
 
@@ -273,5 +331,53 @@ class HomeFragment : Fragment(), AnkoLogger {
             // Lakukan aksi yang diinginkan ketika tombol Tolak diklik
             alertDialog.dismiss() // Tutup alert dialog setelah aksi selesai
         }
+    }
+
+    // Implementasi dari OnMapReadyCallback
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+
+        // Mengatur tampilan peta dan lainnya
+        val uiSettings = mMap.uiSettings
+        uiSettings.isZoomControlsEnabled = true
+        uiSettings.isZoomGesturesEnabled = true
+        uiSettings.isScrollGesturesEnabled = true
+        uiSettings.isTiltGesturesEnabled = true
+        uiSettings.isRotateGesturesEnabled = true
+        uiSettings.isCompassEnabled = true
+
+        // Meminta izin lokasi
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            mMap.isMyLocationEnabled = true
+        } else {
+            // Request the permission
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                permissionCode
+            )
+        }
+    }
+
+    // Fungsi untuk mengupdate peta dengan lokasi terbaru dan menambahkan marker
+    private fun updateMapLocation(latitude: Double, longitude: Double) {
+        val location = LatLng(latitude, longitude)
+        val marker = BitmapDescriptorFactory.fromResource(R.drawable.motor)
+        // Hapus marker sebelumnya jika ada
+        currentLocationMarker?.remove()
+        // Tambahkan marker baru pada lokasi saat ini
+        currentLocationMarker = mMap.addMarker(
+            MarkerOptions()
+                .position(location)
+                .title("Lokasi Anda")
+                .icon(marker)
+        )
+
+        // Pindahkan kamera ke lokasi saat ini
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
     }
 }
