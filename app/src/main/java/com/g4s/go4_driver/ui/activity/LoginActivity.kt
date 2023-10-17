@@ -76,7 +76,7 @@ class LoginActivity : AppCompatActivity(), AnkoLogger {
                                     sessionManager.setFcm(token.toString())
                                     sessionManager.setId(response.body()!!.data!!.idUser!!)
                                     sessionManager.setNamaDriver(response.body()!!.data!!.nama!!)
-                                    sessionManager.setType(response.body()!!.data!!.role.toString())
+                                    sessionManager.setType(response.body()!!.data!!.detailDriver!!.statusDriver.toString())
                                     sessionManager.setFoto(response.body()!!.data!!.detailDriver!!.foto.toString())
                                     sessionManager.setLogin(true)
                                     loading(false)

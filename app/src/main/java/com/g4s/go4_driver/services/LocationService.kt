@@ -36,7 +36,7 @@ class LocationService : Service() {
                     val location = it.lastLocation
                     if (location != null) {
                         // Simpan data lokasi ke Firebase Realtime Database
-                        saveLocationToDatabase(location.latitude, location.longitude, "active", type.toString(), fcmUser.toString())
+                        saveLocationToDatabase(location.latitude, location.longitude)
 
                         // Update the notification with the new location data
                         val notification: Notification = buildNotification(location.latitude, location.longitude)
@@ -66,7 +66,7 @@ class LocationService : Service() {
                 startForeground(123, notification)
 
                 // Update user data with status and kodeFcm
-                updateUserData(idUser) // Ganti nilai status sesuai kebutuhan
+                updateUserData(idUser, type.toString(), fcmUser.toString()) // Ganti nilai status sesuai kebutuhan
             }
             "STOP_LOCATION_SERVICE" -> {
                 // Menghentikan layanan jika tindakan "STOP_LOCATION_SERVICE" diterima
@@ -120,15 +120,12 @@ class LocationService : Service() {
         fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
-    private fun saveLocationToDatabase(latitude: Double, longitude: Double, status: String, type: String, fcm: String) {
+    private fun saveLocationToDatabase(latitude: Double, longitude: Double) {
         // Simpan data lokasi ke Firebase Realtime Database
         val database = FirebaseDatabase.getInstance()
         val locationRef = database.getReference("driver_active").child(idUser!!)
         locationRef.child("latitude").setValue(latitude)
         locationRef.child("longitude").setValue(longitude)
-        locationRef.child("status").setValue(status)
-        locationRef.child("type").setValue(type)
-        locationRef.child("fcm").setValue(fcm)
     }
 
     // Membuat saluran notifikasi (Notification Channel) jika perangkat menggunakan Android Oreo atau versi yang lebih tinggi
@@ -159,13 +156,16 @@ class LocationService : Service() {
         return notification
     }
 
-    private fun updateUserData(idUser: String?) {
+    private fun updateUserData(idUser: String?, type: String, fcm: String) {
         val database = FirebaseDatabase.getInstance()
         val userRef = database.getReference("driver_active").child(idUser!!)
 
         val userData = HashMap<String, Any>()
         userData["latitude"] = 0.0 // Nilai awal latitude
         userData["longitude"] = 0.0 // Nilai awal longitude
+        userData["status"] = "active"
+        userData["type"] = type
+        userData["fcm"] = fcm
 
         userRef.updateChildren(userData)
             .addOnCompleteListener { task ->

@@ -367,17 +367,17 @@ class HomeFragment : Fragment(), AnkoLogger, OnMapReadyCallback {
     private fun updateMapLocation(latitude: Double, longitude: Double) {
         val location = LatLng(latitude, longitude)
         val marker = BitmapDescriptorFactory.fromResource(R.drawable.motor)
-        // Hapus marker sebelumnya jika ada
-        currentLocationMarker?.remove()
-        // Tambahkan marker baru pada lokasi saat ini
-        currentLocationMarker = mMap.addMarker(
-            MarkerOptions()
-                .position(location)
-                .title("Lokasi Anda")
-                .icon(marker)
-        )
-
-        // Pindahkan kamera ke lokasi saat ini
+//        // Hapus marker sebelumnya jika ada
+//        currentLocationMarker?.remove()
+//        // Tambahkan marker baru pada lokasi saat ini
+//        currentLocationMarker = mMap.addMarker(
+//            MarkerOptions()
+//                .position(location)
+//                .title("Lokasi Anda")
+//                .icon(marker)
+//        )
+//
+//        // Pindahkan kamera ke lokasi saat ini
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
     }
 }
