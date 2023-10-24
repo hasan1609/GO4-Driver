@@ -1,4 +1,4 @@
-package com.go4sumbergedang.go4.model
+package com.g4s.go4_driver.model
 
 import com.google.gson.annotations.SerializedName
 

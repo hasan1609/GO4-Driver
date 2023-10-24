@@ -10,6 +10,9 @@ data class ResponseOrderLog(
 	@field:SerializedName("pendapatan")
 	val pendapatan: Int? = null,
 
+	@field:SerializedName("saldo")
+	val saldo: SaldoModel? = null,
+
 	@field:SerializedName("message")
 	val message: String? = null,
 

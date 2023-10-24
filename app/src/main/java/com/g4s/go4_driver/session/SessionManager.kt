@@ -19,8 +19,16 @@ class SessionManager(private val context: Context) {
     {
         return Pref?.getBoolean(islogin,false)
     }
+    private val isNotificationBooking = "loginisNotificationBooking"
+    fun isNotificationBooking(check: Boolean){
+        editor?.putBoolean(isNotificationBooking,check)
+        editor?.commit()
+    }
 
-
+    fun getNotificationBooking():Boolean?
+    {
+        return Pref?.getBoolean(isNotificationBooking,false)
+    }
     private val isToken = "isToken"
     fun setToken(check: String){
         editor?.putString(isToken,check)

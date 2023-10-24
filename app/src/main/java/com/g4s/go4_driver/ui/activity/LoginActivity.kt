@@ -111,6 +111,7 @@ class LoginActivity : AppCompatActivity(), AnkoLogger {
             }
         })
     }
+
     override fun onStart() {
         super.onStart()
         if (sessionManager.getLogin() == true){

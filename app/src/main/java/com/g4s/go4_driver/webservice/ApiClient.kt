@@ -18,7 +18,7 @@ class ApiClient {
             return if (retrofit == null){
                 retrofit = Retrofit.Builder().apply {
                     client(opt)
-                    baseUrl("http://192.168.43.176/go4-sumbergedang/rest-g4s/public/api/")
+                    baseUrl("https://restapi.go4sumbergedang.com/ojokdibuka/public/api/")
                     addConverterFactory(GsonConverterFactory.create())
                 }.build()
                 retrofit!!

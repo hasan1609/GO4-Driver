@@ -1,9 +1,6 @@
 package com.g4s.go4_driver.webservice
 
-import com.g4s.go4_driver.model.ResponseBooking
-import com.g4s.go4_driver.model.ResponseDetailLogOrder
-import com.g4s.go4_driver.model.ResponseLogin
-import com.g4s.go4_driver.model.ResponseOrderLog
+import com.g4s.go4_driver.model.*
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -31,4 +28,10 @@ interface ApiService {
     fun getBookingById(
         @Path("id") id: String,
     ): Call<ResponseBooking>
+
+    //TODO: REVIEW
+    @GET("review/driver/{id}")
+    fun getReview(
+        @Path("id") id: String
+    ): Call<ResponseUlasan>
 }

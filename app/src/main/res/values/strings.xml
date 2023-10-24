@@ -8,5 +8,5 @@
     <string name="title_proses">Sedang Proses</string>
     <string name="title_selesai">Selesai</string>
     <string name="title_batal">Dibatalkan</string>
-    <string name="urlImage">http://192.168.43.176/go4-sumbergedang/rest-g4s</string>
+    <string name="urlImage">https://restapi.go4sumbergedang.com/ojokdibuka</string>
 </resources>

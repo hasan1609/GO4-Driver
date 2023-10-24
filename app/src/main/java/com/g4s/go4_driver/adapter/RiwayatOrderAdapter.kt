@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.g4s.go4_driver.R
 import com.g4s.go4_driver.model.DataLogOrder
+import com.g4s.go4_driver.model.OrderLogModel
 import com.squareup.picasso.Picasso
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
@@ -26,15 +27,13 @@ class RiwayatOrderAdapter (
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), AnkoLogger{
 
     private val VIEW_TYPE_HEADER = 1
-    private val VIEW_TYPE_ITEM = 2
-
 
     private val VIEW_TYPE_DRIVER = 3
     private val VIEW_TYPE_RESTO = 4
 
     private var dialog: Dialog? = null
     interface Dialog {
-        fun onClick(position: Int, idOrder : String, status: String)
+        fun onClick(position: Int, order: OrderLogModel, status: String)
     }
 
     fun setDialog(dialog: Dialog) {
@@ -90,7 +89,6 @@ class RiwayatOrderAdapter (
     inner class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(header: OrderHeader) {
             val headerText = itemView.findViewById<TextView>(R.id.header_textview)
-
             val layoutParams = headerText.layoutParams as ViewGroup.MarginLayoutParams
             headerText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
             layoutParams.setMargins(30, 10, 30, 10)
@@ -110,12 +108,12 @@ class RiwayatOrderAdapter (
             val urlImage = context.getString(R.string.urlImage)
             val foto= order.order!!.detailCustomer!!.foto.toString()
             var def = "/public/images/no_image.png"
-            if(order.order.kategori == "motor"){
-                headerText.text = "MOTOR"
-                headerIc.setImageDrawable(context.getDrawable(R.drawable.ic_motor))
-            }else{
+            if(order.order.kategori == "mobil"){
                 headerText.text = "MOBIL"
                 headerIc.setImageDrawable(context.getDrawable(R.drawable.ic_car))
+            }else {
+                headerText.text = "MOTOR"
+                headerIc.setImageDrawable(context.getDrawable(R.drawable.ic_motor))
             }
             if (foto != null) {
                 Picasso.get()
@@ -145,28 +143,30 @@ class RiwayatOrderAdapter (
 
             when (order.order.status) {
                 "0" -> {
-                    status.text = "Menuju ke lokasi penjemputan"
-                    status.setTextColor(context.getColor(R.color.primary_color))
+                    status.text = "Menunngu Konfirmasi"
                 }
                 "1" -> {
-                    status.text = "Sampai di lokasi penjemputan"
-                    status.setTextColor(context.getColor(R.color.primary_color))
+                    status.text = "Nenuju lokasi penjemputan"
                 }
                 "2" -> {
-                    status.text = "Sedang menuju lokasi tujuan"
-                    status.setTextColor(context.getColor(R.color.primary_color))
+                    status.text = "Menuju lokasi tujuan"
                 }
                 "3" -> {
-                    status.text = "Sampai Pada tujuan"
-                    status.setTextColor(context.getColor(R.color.primary_color))
+                    status.text = "Menuju lokasi pengantaran"
                 }
                 "4" -> {
+                    status.text = "Sampai pada tujuan"
+                }
+                "5" -> {
                     status.text = "Selesai"
-                    status.setTextColor(context.getColor(R.color.teal_700))
                 }
                 else -> {
                     status.text = "Ditolak"
-                    status.setTextColor(context.getColor(R.color.red))
+                }
+            }
+            itemView.setOnClickListener {
+                if (dialog != null) {
+                    dialog!!.onClick(adapterPosition, order.order, order.order.status.toString())
                 }
             }
         }
@@ -231,7 +231,7 @@ class RiwayatOrderAdapter (
                     status.setTextColor(context.getColor(R.color.primary_color))
                 }
                 "3" -> {
-                    status.text = "Telah sampai"
+                    status.text = "Driver telah sampai"
                     status.setTextColor(context.getColor(R.color.primary_color))
                 }
                 "4" -> {
@@ -241,6 +241,12 @@ class RiwayatOrderAdapter (
                 else -> {
                     status.text = "Ditolak"
                     status.setTextColor(context.getColor(R.color.red))
+                }
+            }
+
+            itemView.setOnClickListener {
+                if (dialog != null) {
+                    dialog!!.onClick(adapterPosition, order.order, order.order.status.toString())
                 }
             }
         }
@@ -294,12 +300,6 @@ class RiwayatOrderAdapter (
                 // Bind data for motor item view holder
                 val order = item as DataLogOrder
                 holder.bind(order)
-            }
-        }
-
-        holder.itemView.setOnClickListener {
-            if (dialog != null) {
-                dialog!!.onClick(position, (item as DataLogOrder).order?.idOrder.toString(), (item as DataLogOrder).order?.status.toString())
             }
         }
     }

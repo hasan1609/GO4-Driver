@@ -10,6 +10,7 @@ import android.os.IBinder
 import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.navigation.NavDeepLinkBuilder
 import com.g4s.go4_driver.ui.activity.MainActivity
 import com.g4s.go4_driver.R
 import com.google.android.gms.location.*
@@ -132,7 +133,7 @@ class LocationService : Service() {
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                "channel_id",
+                "foreground",
                 "Foreground Service Channel",
                 NotificationManager.IMPORTANCE_DEFAULT
             )
@@ -143,10 +144,14 @@ class LocationService : Service() {
 
     // Membangun notifikasi yang akan digunakan untuk foreground service
     private fun buildNotification(latitude: Double, longitude: Double): Notification {
-        val notificationIntent = Intent(this, MainActivity::class.java) // Ganti YourActivity dengan activity tujuan notifikasi
-        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
+        // Menggunakan NavDeepLinkBuilder untuk mengarahkan ke HomeFragment dengan data
+        val pendingIntent = NavDeepLinkBuilder(this)
+            .setGraph(R.navigation.driver_navigation)
+            .setDestination(R.id.homeFragment)
+            .createPendingIntent()
+
         val notificationText = "Latitude: $latitude, Longitude: $longitude"
-        val notification = NotificationCompat.Builder(this, "channel_id")
+        val notification = NotificationCompat.Builder(this, "foreground")
             .setContentTitle("Foreground Service")
             .setContentText(notificationText)
             .setSmallIcon(R.drawable.ic_home) // Ganti dengan ikon notifikasi yang sesuai

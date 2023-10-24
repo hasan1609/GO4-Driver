@@ -12,13 +12,17 @@ import com.g4s.go4_driver.R
 import com.g4s.go4_driver.adapter.RiwayatOrderAdapter
 import com.g4s.go4_driver.databinding.FragmentPendapatanBinding
 import com.g4s.go4_driver.model.DataLogOrder
+import com.g4s.go4_driver.model.OrderLogModel
 import com.g4s.go4_driver.model.ResponseOrderLog
 import com.g4s.go4_driver.session.SessionManager
 import com.g4s.go4_driver.ui.activity.DetailRiwayatOrderActivity
+import com.g4s.go4_driver.ui.activity.TrackingOrderActivity
 import com.g4s.go4_driver.webservice.ApiClient
+import com.google.gson.Gson
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 import org.jetbrains.anko.support.v4.intentFor
+import org.jetbrains.anko.support.v4.startActivity
 import org.jetbrains.anko.support.v4.toast
 import retrofit2.Call
 import retrofit2.Callback
@@ -60,13 +64,15 @@ class PendapatanFragment : Fragment(), AnkoLogger {
                     if (response.isSuccessful) {
                         loading(false)
                         val data = response.body()
-                        val totalx = data!!.pendapatan!!.toDouble() ?: 0.0
                         val formatter = DecimalFormat.getCurrencyInstance() as DecimalFormat
                         val symbols = formatter.decimalFormatSymbols
                         symbols.currencySymbol = "Rp. "
                         formatter.decimalFormatSymbols = symbols
-
+                        val totalx = data!!.pendapatan!!.toDouble() ?: 0.0
                         val totals = formatter.format(totalx)
+                        val saldox = data.saldo!!.saldo!!.toDouble() ?: 0.0
+                        val saldos = formatter.format(saldox)
+                        binding.txtSaldo.text = saldos
                         binding.txtPendapatan.text = totals
                         if (response.body()!!.data!!.isEmpty()){
                             binding.txtKosong.visibility = View.VISIBLE
@@ -83,15 +89,17 @@ class PendapatanFragment : Fragment(), AnkoLogger {
                                 mAdapter = RiwayatOrderAdapter(notesList, requireActivity())
                                 binding.rvRiwayat.adapter = mAdapter
                                 mAdapter.setDialog(object : RiwayatOrderAdapter.Dialog {
-                                    override fun onClick(position: Int, idOrder: String, status: String) {
+                                    override fun onClick(position: Int, order: OrderLogModel, status: String) {
                                         when (status) {
                                             "0", "1", "2", "3" -> {
-                                                // Tindakan sesuai dengan status tertentu
+                                                val gson = Gson()
+                                                val noteJoson = gson.toJson(order)
+                                                startActivity<TrackingOrderActivity>("order" to noteJoson)
                                             }
                                             else -> {
-                                                val intent = intentFor<DetailRiwayatOrderActivity>()
-                                                    .putExtra("idOrder", idOrder)
-                                                startActivity(intent)
+//                                                val intent = intentFor<DetailRiwayatOrderActivity>()
+//                                                    .putExtra("idOrder", idOrder)
+//                                                startActivity(intent)
                                             }
                                         }
                                     }

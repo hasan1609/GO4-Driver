@@ -1,15 +1,14 @@
 package com.g4s.go4_driver.model
 
-import com.go4sumbergedang.go4.model.DetailRestoModel
 import com.google.gson.annotations.SerializedName
 
-data class ResponseBooking(
+data class ResponseUlasan(
 
 	@field:SerializedName("data")
-	val data: OrderLogModel? = null,
+	val data: List<UlasanModel?>? = null,
 
-	@field:SerializedName("jarak")
-	val jarak: Int? = null,
+	@field:SerializedName("message")
+	val message: String? = null,
 
 	@field:SerializedName("status")
 	val status: Boolean? = null
