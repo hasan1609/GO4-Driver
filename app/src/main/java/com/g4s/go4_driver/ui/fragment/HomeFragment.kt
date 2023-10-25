@@ -379,7 +379,6 @@ class HomeFragment : Fragment(), AnkoLogger, OnMapReadyCallback {
     // Fungsi untuk mengupdate peta dengan lokasi terbaru dan menambahkan marker
     private fun updateMapLocation(latitude: Double, longitude: Double) {
         val location = LatLng(latitude, longitude)
-        val marker = BitmapDescriptorFactory.fromResource(R.drawable.motor)
 
         currentLocationMarker?.remove()
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
