@@ -5,28 +5,20 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.navigation.NavDeepLinkBuilder
 import com.g4s.go4_driver.R
-import com.g4s.go4_driver.model.NotificationEvent
 import com.g4s.go4_driver.session.SessionManager
 import com.g4s.go4_driver.ui.activity.MainActivity
-import com.g4s.go4_driver.ui.activity.ProfileActivity
-import com.g4s.go4_driver.ui.activity.TrackingOrderActivity
-import com.g4s.go4_driver.ui.fragment.HomeFragment
-import org.greenrobot.eventbus.EventBus
 
 const val channel_id="Pesanan"
+@SuppressLint("MissingFirebaseInstanceTokenRefresh")
 class NotificationServices : FirebaseMessagingService() {
-
     private lateinit var sessionManager: SessionManager
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
@@ -64,7 +56,6 @@ class NotificationServices : FirebaseMessagingService() {
                     .setContentIntent(pendingIntent)
                     .build()
 
-                EventBus.getDefault().post(NotificationEvent(notificationTitle, notificationBody, bookingId))
                 val notificationManager = NotificationManagerCompat.from(this)
                 val notificationId = System.currentTimeMillis().toInt()
                 notificationManager.notify(notificationId, notificationBuilder)

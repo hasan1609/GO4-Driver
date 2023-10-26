@@ -32,6 +32,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.Gson
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.SphericalUtil
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.bottomsheet_data_customer.view.*
 import org.greenrobot.eventbus.EventBus
 import org.jetbrains.anko.AnkoLogger
@@ -49,6 +50,8 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
     private lateinit var mMap: GoogleMap
     var order: OrderLogModel? = null
     var route: ResponseRoutes? = null
+    var status1: String? = null
+    var status2: String? = null
     private val handler = Handler(Looper.getMainLooper())
     var currentLocation: Location? = null
     private var routePolyline: Polyline? = null
@@ -78,19 +81,42 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
         val supportMapFragment =
             (supportFragmentManager.findFragmentById(R.id.mapview) as SupportMapFragment?)!!
         supportMapFragment.getMapAsync(this)
+        setupUi()
+    }
 
+    private fun setupUi() {
+        if (order!!.kategori == "resto"){
+            status1 = "Menuju Lokasi Resto"
+            status2 = "Sampai Lokasi Resto"
+        }else{
+            status1 = "Menuju TItik Jemput"
+            status2 = "Sampai Titi Jemput"
+        }
+        val urlImage = this.getString(R.string.urlImage)
+        val foto = order!!.detailCustomer!!.foto.toString()
+        var def = "/public/images/no_image.png"
+        val ft = binding.bottomSheetLayout.foto
+        if (foto  != null) {
+            Picasso.get()
+                .load(urlImage + foto)
+                .into(ft)
+        } else {
+            Picasso.get()
+                .load(urlImage + def)
+                .into(ft)
+        }
         binding.bottomSheetLayout.btn_start.visibility = View.VISIBLE
         binding.bottomSheetLayout.btn_start.setOnClickListener {
             registerLocationUpdateReceiver()
             startLocationUpdates()
-            updateStatus("1", binding.bottomSheetLayout.btn_start,
+            updateStatus("1",  status1.toString(), binding.bottomSheetLayout.btn_start,
                 checkWaypoint = true,
                 checkDestination = false
             )
         }
 
         binding.bottomSheetLayout.btn_waypoint.setOnClickListener {
-            updateStatus("2", binding.bottomSheetLayout.btn_waypoint,
+            updateStatus("2", status2.toString(), binding.bottomSheetLayout.btn_waypoint,
                 checkWaypoint = false,
                 checkDestination = false
             )
@@ -103,16 +129,24 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
         binding.bottomSheetLayout.btn_waypoint2.setOnClickListener {
             registerLocationUpdateReceiver()
             startLocationUpdates()
-            updateStatus("3", binding.bottomSheetLayout.btn_waypoint2,
+            updateStatus("3", "Menuju Lokasi Tujuan", binding.bottomSheetLayout.btn_waypoint2,
                 checkWaypoint = false,
                 checkDestination = true
             )
         }
         binding.bottomSheetLayout.btn_tujuan.setOnClickListener {
-            updateStatus("4", binding.bottomSheetLayout.btn_waypoint,
+            updateStatus("4", "Sampai Lokasi Tujuan", binding.bottomSheetLayout.btn_waypoint,
                 checkWaypoint = false,
                 checkDestination = false
             )
+            binding.bottomSheetLayout.btn_sampai.visibility = View.VISIBLE
+        }
+        binding.bottomSheetLayout.btn_sampai.setOnClickListener {
+            binding.bottomSheetLayout.btn_sampai.visibility = View.GONE
+            binding.bottomSheetLayout.btn_selesai.visibility = View.VISIBLE
+        }
+        binding.bottomSheetLayout.btn_selesai.setOnClickListener {
+
         }
     }
 
@@ -280,7 +314,7 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
         }
     }
 
-    private fun updateStatus(status: String, button: Button, checkWaypoint: Boolean, checkDestination: Boolean){
+    private fun updateStatus(status: String, nama: String, button: Button, checkWaypoint: Boolean, checkDestination: Boolean){
         api.updateStatusOrder(order!!.idOrder.toString(), status).enqueue(object :
             Callback<ResponsePostData> {
             override fun onResponse(
@@ -293,6 +327,8 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
                         isCheckingWaypoint = checkWaypoint
                         isCheckingDestination = checkDestination
                         button.visibility = View.GONE
+                        binding.bottomSheetLayout.nama.text = nama
+
                     } else {
                         loading(false)
                         toast("gagal mendapatkan response")

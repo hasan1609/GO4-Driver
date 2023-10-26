@@ -9,8 +9,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.location.Geocoder
-import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
@@ -20,39 +18,29 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.g4s.go4_driver.R
 import com.g4s.go4_driver.databinding.FragmentHomeBinding
-import com.g4s.go4_driver.model.NotificationEvent
-import com.g4s.go4_driver.model.ResponseBooking
+import com.g4s.go4_driver.model.ResponseCekBooking
 import com.g4s.go4_driver.services.LocationService
 import com.g4s.go4_driver.session.SessionManager
 import com.g4s.go4_driver.ui.activity.ProfileActivity
-import com.g4s.go4_driver.ui.activity.TrackingOrderActivity
+import com.g4s.go4_driver.utils.AlertOrderUtils
 import com.g4s.go4_driver.webservice.ApiClient
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.*
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.firebase.database.*
-import kotlinx.android.synthetic.main.custom_alert_recive_booking.view.*
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import com.google.gson.Gson
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 import org.jetbrains.anko.support.v4.startActivity
 import org.jetbrains.anko.support.v4.toast
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class HomeFragment : Fragment(), AnkoLogger, OnMapReadyCallback {
 
@@ -60,6 +48,7 @@ class HomeFragment : Fragment(), AnkoLogger, OnMapReadyCallback {
     lateinit var sessionManager: SessionManager
     var api = ApiClient.instance()
     private lateinit var progressDialog: ProgressDialog
+    private lateinit var alertOrderUtils: AlertOrderUtils
     private val permissionCode = 101
     private val REQUEST_BACKGROUND_LOCATION_PERMISSION = 1005
     private val REQUEST_LOCATION_SETTINGS = 1004
@@ -67,6 +56,14 @@ class HomeFragment : Fragment(), AnkoLogger, OnMapReadyCallback {
     private var locationServiceIntent: Intent? = null // Intent untuk LocationService
     private var currentLocationMarker: Marker? = null
 
+    // Register receiver for location updates
+    private val orderReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val responseDataJson = intent!!.getStringExtra("response_data")
+            val responseData = Gson().fromJson(responseDataJson, ResponseCekBooking::class.java)
+            alertOrderUtils.showAlertDialog(responseData)
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -75,9 +72,9 @@ class HomeFragment : Fragment(), AnkoLogger, OnMapReadyCallback {
         binding.lifecycleOwner = this
         sessionManager = SessionManager(requireActivity())
         progressDialog = ProgressDialog(requireActivity())
+        alertOrderUtils = AlertOrderUtils(requireContext())
         val database = FirebaseDatabase.getInstance()
         val locationRef = database.getReference("driver_active").child(sessionManager.getId().toString())
-
         // Tambahkan listener untuk memeriksa keberadaan idUser di database
         loading(true)
         locationRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -116,9 +113,10 @@ class HomeFragment : Fragment(), AnkoLogger, OnMapReadyCallback {
                 }
             }
         }
-
         val filter = IntentFilter("LOCATION_UPDATE")
         requireActivity().registerReceiver(locationUpdateReceiver, filter)
+        val filter2 = IntentFilter("CEK_BOOKING")
+        requireActivity().registerReceiver(orderReceiver, filter2)
 
         binding.namaDriver.text = sessionManager.getNamaDriver()
         binding.lyProfil.setOnClickListener {
@@ -263,89 +261,6 @@ class HomeFragment : Fragment(), AnkoLogger, OnMapReadyCallback {
         alertDialog.show()
     }
 
-    private fun checkBooking(idBooking: String) {
-        api.getBookingById(idBooking).enqueue(object : Callback<ResponseBooking> {
-            override fun onResponse(
-                call: Call<ResponseBooking>,
-                response: Response<ResponseBooking>
-            ) {
-                try {
-                    if (response.isSuccessful) {
-                        val data = response.body()
-                        if (data!!.status == true) {
-                            showAlertReciveOrder(
-                                data.data!!.idOrder.toString(),
-                                data.data.idOrder.toString(),
-                                data.data.total.toString(),
-                                data.jarak.toString(),
-                                data.data.alamatTujuan.toString(),
-                            )
-                        }
-                    } else {
-                        toast("gagal mendapatkan response")
-                    }
-                } catch (e: Exception) {
-                    info { "hasan ${e.message}" }
-                    toast(e.message.toString())
-                }
-            }
-
-            override fun onFailure(call: Call<ResponseBooking>, t: Throwable) {
-                if (isAdded) {
-                    info { "hasan ${t.message}" }
-                    toast(t.message.toString())
-                }
-            }
-        })
-    }
-
-    // menampilkan alert order masuk
-    private fun showAlertReciveOrder(
-        kdBooking: String,
-        jenis: String,
-        total: String,
-        jarak: String,
-        tujuan: String,
-    ) {
-        sessionManager.isNotificationBooking(false)
-        val builder = AlertDialog.Builder(context)
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.custom_alert_recive_booking, null)
-
-        val txtKode = dialogView.txt_kode
-        val txtJenisOrder = dialogView.txt_jenis_order
-        val txtTotal = dialogView.txt_total
-        val txtJarak = dialogView.txt_jarak
-        val txtTujuan = dialogView.txt_tujuan
-        val btnTerima = dialogView.btn_terima
-        val btnTolak = dialogView.btn_tolak
-
-        txtKode.text = kdBooking
-        txtJenisOrder.text = jenis
-        txtTotal.text = total
-        txtJarak.text = jarak + "KM"
-        txtTujuan.text = tujuan
-
-        // Menambahkan view yang telah diinisialisasi ke dalam builder
-        builder.setView(dialogView)
-
-        // Membuat dan menampilkan alert dialog
-        val alertDialog = builder.create()
-        alertDialog.show()
-
-        // Mengatur aksi ketika tombol Terima diklik
-        btnTerima.setOnClickListener {
-            // Lakukan aksi yang diinginkan ketika tombol Terima diklik
-            alertDialog.dismiss() // Tutup alert dialog setelah aksi selesai
-            startActivity<TrackingOrderActivity>("kdBooking" to kdBooking)
-        }
-
-        // Mengatur aksi ketika tombol Tolak diklik
-        btnTolak.setOnClickListener {
-            // Lakukan aksi yang diinginkan ketika tombol Tolak diklik
-            alertDialog.dismiss() // Tutup alert dialog setelah aksi selesai
-        }
-    }
-
     // Implementasi dari OnMapReadyCallback
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
@@ -384,34 +299,6 @@ class HomeFragment : Fragment(), AnkoLogger, OnMapReadyCallback {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        // Daftarkan diri sebagai penerima EventBus
-        EventBus.getDefault().register(this)
-    }
-    
-    override fun onDestroyView() {
-        // Unregister penerima siaran saat fragment dihancurkan
-        EventBus.getDefault().unregister(this)
-        super.onDestroyView()
-    }
-    // Terima notifikasi yang dikirim dari NotificationServices melalui EventBus
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onNotificationReceived(notificationEvent: NotificationEvent) {
-        val title = notificationEvent.title
-        val message = notificationEvent.message
-        val dataBundle = notificationEvent.data
-        info("oekke $dataBundle")
-        // Tampilkan alert sesuai dengan notifikasi yang diterima
-//        checkBooking(dataBundle.toString())
-        // Cek status notifikasi yang diklik
-        val notificationClicked = sessionManager.getNotificationBooking()
-        if (notificationClicked == true) {
-            // Tampilkan alert karena notifikasi telah diklik
-            checkBooking(dataBundle.toString())
-        }
-    }
-
     private fun loading(isLoading: Boolean) {
         if (isLoading) {
             progressDialog.setMessage("Tunggu sebentar...")
@@ -424,5 +311,10 @@ class HomeFragment : Fragment(), AnkoLogger, OnMapReadyCallback {
 
     override fun onResume() {
         super.onResume()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        requireActivity().unregisterReceiver(orderReceiver)
     }
 }

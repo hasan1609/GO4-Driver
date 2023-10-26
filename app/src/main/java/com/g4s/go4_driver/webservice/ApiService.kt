@@ -31,6 +31,11 @@ interface ApiService {
         @Field("id") id: String,
         @Field("status") status: String,
     ): Call<ResponsePostData>
+    // cek booking
+    @GET("order/cek/{id}")
+    fun cekBooking(
+        @Path("id") id: String
+    ): Call<ResponseCekBooking>
 
     //    get cart Count
     @GET("booking/{id}")

@@ -6,13 +6,16 @@ import android.app.AlertDialog
 import android.content.*
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.g4s.go4_driver.R
+import com.g4s.go4_driver.services.CekBookingService
 import com.g4s.go4_driver.services.LocationService
+import com.g4s.go4_driver.session.SessionManager
 import com.g4s.go4_driver.ui.fragment.ChatFragment
 import com.g4s.go4_driver.ui.fragment.HomeFragment
 import com.g4s.go4_driver.ui.fragment.PendapatanFragment
@@ -23,6 +26,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.jetbrains.anko.toast
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var sessionManager: SessionManager
     private val onNavigationItemSelectedListener =
         BottomNavigationView.OnNavigationItemSelectedListener { item ->
             when (item.itemId) {
@@ -54,20 +58,14 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        sessionManager = SessionManager(this)
         val navView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
         navView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener)
+        // Memulai service cek booking dengan parameter user_id
+        val serviceIntent = Intent(this, CekBookingService::class.java)
+        serviceIntent.putExtra("user_id", sessionManager.getId())
+        startService(serviceIntent)
         moveToFragment(HomeFragment())
-//        if (intent?.action == "OPEN_BOOKING_ACTION_FRAGMENT") {
-//            val fragmentBundle = intent.getBundleExtra("fragment_bundle")
-//            if (fragmentBundle != null) {
-//                moveToFragment(HomeFragment().apply {
-//                    arguments = fragmentBundle
-//                })
-//                intent.action = null
-//            }
-//        } else {
-//
-//        }
     }
 
     private fun moveToFragment(fragment: Fragment) {

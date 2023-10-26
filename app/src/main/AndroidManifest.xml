@@ -57,6 +57,11 @@
             android:enabled="true"
             android:exported="false" />
         <service
+            android:name=".services.CekBookingService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <service
             android:name=".services.NotificationServices"
             android:enabled="true"
             android:exported="false">
