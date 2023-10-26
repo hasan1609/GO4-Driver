@@ -1,5 +1,6 @@
 package com.g4s.go4_driver.ui.activity
 
+import android.app.ProgressDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -11,11 +12,13 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.widget.Button
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import com.g4s.go4_driver.R
 import com.g4s.go4_driver.databinding.ActivityTrackingOrderBinding
 import com.g4s.go4_driver.model.OrderLogModel
+import com.g4s.go4_driver.model.ResponsePostData
 import com.g4s.go4_driver.model.ResponseRoutes
 import com.g4s.go4_driver.model.TrackingModel
 import com.g4s.go4_driver.session.SessionManager
@@ -34,10 +37,14 @@ import org.greenrobot.eventbus.EventBus
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 import org.jetbrains.anko.toast
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallback {
     private lateinit var binding: ActivityTrackingOrderBinding
     private val api = ApiClient.instance()
+    private lateinit var progressDialog: ProgressDialog
     private lateinit var sessionManager: SessionManager
     private lateinit var mMap: GoogleMap
     var order: OrderLogModel? = null
@@ -48,6 +55,7 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
     private var marker: Marker? = null
     private var locationUpdateReceiver: BroadcastReceiver? = null
     private var isCheckingWaypoint = true
+    private var isCheckingDestination = false
 
     private val saveLocationRunnable = object : Runnable {
         override fun run() {
@@ -63,6 +71,7 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
         binding = DataBindingUtil.setContentView(this, R.layout.activity_tracking_order)
         binding.lifecycleOwner = this
         sessionManager = SessionManager(this)
+        progressDialog = ProgressDialog(this)
         val gson = Gson()
         order = gson.fromJson(intent.getStringExtra("order"), OrderLogModel::class.java)
         route = gson.fromJson(order!!.routes, ResponseRoutes::class.java)
@@ -72,18 +81,38 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
 
         binding.bottomSheetLayout.btn_start.visibility = View.VISIBLE
         binding.bottomSheetLayout.btn_start.setOnClickListener {
-            isCheckingWaypoint = true
             registerLocationUpdateReceiver()
             startLocationUpdates()
-            binding.bottomSheetLayout.btn_start.visibility = View.GONE
+            updateStatus("1", binding.bottomSheetLayout.btn_start,
+                checkWaypoint = true,
+                checkDestination = false
+            )
         }
 
         binding.bottomSheetLayout.btn_waypoint.setOnClickListener {
-            isCheckingWaypoint = false
-            binding.bottomSheetLayout.btn_waypoint.visibility = View.GONE
-            if (currentLocation != null) {
-                checkDistanceToWaypointAndDestination(currentLocation!!)
-            }
+            updateStatus("2", binding.bottomSheetLayout.btn_waypoint,
+                checkWaypoint = false,
+                checkDestination = false
+            )
+            handler.removeCallbacksAndMessages(null)
+            unregisterReceiver(locationUpdateReceiver)
+            binding.bottomSheetLayout.btn_waypoint2.visibility = View.VISIBLE
+
+        }
+
+        binding.bottomSheetLayout.btn_waypoint2.setOnClickListener {
+            registerLocationUpdateReceiver()
+            startLocationUpdates()
+            updateStatus("3", binding.bottomSheetLayout.btn_waypoint2,
+                checkWaypoint = false,
+                checkDestination = true
+            )
+        }
+        binding.bottomSheetLayout.btn_tujuan.setOnClickListener {
+            updateStatus("4", binding.bottomSheetLayout.btn_waypoint,
+                checkWaypoint = false,
+                checkDestination = false
+            )
         }
     }
 
@@ -210,7 +239,13 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
                     updateMapWithLocation(latitude, longitude)
                     // Memeriksa jarak ke waypoint dan lokasi tujuan setiap kali menerima pembaruan lokasi
                     if (currentLocation != null) {
-                        checkDistanceToWaypointAndDestination(currentLocation!!)
+                        if (isCheckingWaypoint && !isCheckingDestination)
+                        {
+                            checkDistanceToWaypoint(currentLocation!!)
+                        }else if(!isCheckingWaypoint && isCheckingDestination)
+                        {
+                            checkDistanceDestination(currentLocation!!)
+                        }
                     }
                 }
             }
@@ -224,27 +259,65 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
         handler.postDelayed(saveLocationRunnable, 5000) // 5000 milidetik = 5 detik
     }
 
-    private fun checkDistanceToWaypointAndDestination(currentLocation: Location) {
+    private fun checkDistanceToWaypoint(currentLocation: Location) {
         val waypointLocation = Location("")
         waypointLocation.latitude = order!!.latitudeDari.toString().toDouble()
         waypointLocation.longitude = order!!.longitudeDari.toString().toDouble()
-
+        val distanceToWaypoint = currentLocation.distanceTo(waypointLocation)
+        if (distanceToWaypoint < 50.0) {
+            binding.bottomSheetLayout.btn_waypoint.text = "Sampai Lokasi"
+            binding.bottomSheetLayout.btn_waypoint.visibility = View.VISIBLE
+        }
+    }
+    private fun checkDistanceDestination(currentLocation: Location) {
         val destinationLocation = Location("")
         destinationLocation.latitude = order!!.latitudeTujuan.toString().toDouble()
         destinationLocation.longitude = order!!.longitudeTujuan.toString().toDouble()
+        val distanceToDestination = currentLocation.distanceTo(destinationLocation)
+        if (distanceToDestination < 50.0) {
+            binding.bottomSheetLayout.btn_waypoint.text = "Selesai"
+            binding.bottomSheetLayout.btn_tujuan.visibility = View.VISIBLE
+        }
+    }
 
-        if (isCheckingWaypoint) {
-            val distanceToWaypoint = currentLocation.distanceTo(waypointLocation)
-            if (distanceToWaypoint < 50.0) {
-                binding.bottomSheetLayout.btn_waypoint.text = "Sampai Lokasi"
-                binding.bottomSheetLayout.btn_waypoint.visibility = View.VISIBLE
+    private fun updateStatus(status: String, button: Button, checkWaypoint: Boolean, checkDestination: Boolean){
+        api.updateStatusOrder(order!!.idOrder.toString(), status).enqueue(object :
+            Callback<ResponsePostData> {
+            override fun onResponse(
+                call: Call<ResponsePostData>,
+                response: Response<ResponsePostData>
+            ) {
+                try {
+                    if (response.isSuccessful) {
+                        loading(false)
+                        isCheckingWaypoint = checkWaypoint
+                        isCheckingDestination = checkDestination
+                        button.visibility = View.GONE
+                    } else {
+                        loading(false)
+                        toast("gagal mendapatkan response")
+                    }
+                } catch (e: Exception) {
+                    loading(false)
+                    info { "hasan ${e.message}" }
+                    toast(e.message.toString())
+                }
             }
+            override fun onFailure(call: Call<ResponsePostData>, t: Throwable) {
+                loading(false)
+                info { "hasan ${t.message}" }
+                toast(t.message.toString())
+            }
+        })
+    }
+
+    private fun loading(isLoading: Boolean) {
+        if (isLoading) {
+            progressDialog.setMessage("Tunggu sebentar...")
+            progressDialog.setCancelable(false)
+            progressDialog.show()
         } else {
-            val distanceToDestination = currentLocation.distanceTo(destinationLocation)
-            if (distanceToDestination < 50.0) {
-                binding.bottomSheetLayout.btn_waypoint.text = "Selesai"
-                binding.bottomSheetLayout.btn_tujuan.visibility = View.VISIBLE
-            }
+            progressDialog.dismiss()
         }
     }
 

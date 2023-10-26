@@ -14,14 +14,23 @@ interface ApiService {
     ): Call<ResponseLogin>
 
     // TODO: ORDER
+    // get order log
     @GET("order/driver/{id}")
     fun getOrderLog(
         @Path("id") id: String
     ): Call<ResponseOrderLog>
+    // get detail order log
     @GET("order/detail/{id}")
     fun getDetailOrderLog(
         @Path("id") id: String
     ): Call<ResponseDetailLogOrder>
+    // update status
+    @FormUrlEncoded
+    @POST("order/status")
+    fun updateStatusOrder(
+        @Field("id") id: String,
+        @Field("status") status: String,
+    ): Call<ResponsePostData>
 
     //    get cart Count
     @GET("booking/{id}")

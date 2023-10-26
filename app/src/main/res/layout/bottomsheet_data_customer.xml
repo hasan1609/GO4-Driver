@@ -106,7 +106,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="sSampaii"
+        android:text="Sampai"
+        android:visibility="gone"/>
+    <Button
+        android:id="@+id/btn_waypoint2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Menuju Lokasi"
         android:visibility="gone"/>
     <Button
         android:id="@+id/btn_tujuan"

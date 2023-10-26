@@ -24,7 +24,7 @@ import com.g4s.go4_driver.ui.activity.TrackingOrderActivity
 import com.g4s.go4_driver.ui.fragment.HomeFragment
 import org.greenrobot.eventbus.EventBus
 
-@SuppressLint("MissingFirebaseInstanceTokenRefresh")
+const val channel_id="Pesanan"
 class NotificationServices : FirebaseMessagingService() {
 
     private lateinit var sessionManager: SessionManager
@@ -52,15 +52,14 @@ class NotificationServices : FirebaseMessagingService() {
                     notificationManager.createNotificationChannel(channel)
                 }
 //
-                val pendingIntent = NavDeepLinkBuilder(this)
-                    .setGraph(R.navigation.driver_navigation)
-                    .setDestination(R.id.pendapatanFragment)
-                    .createPendingIntent()
+                val intent= Intent(this,MainActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                val pendingIntent=PendingIntent.getActivity(this,0,intent,PendingIntent.FLAG_IMMUTABLE)
 
-                val notificationBuilder = NotificationCompat.Builder(this, "booking-channel")
+                val notificationBuilder = NotificationCompat.Builder(this, channel_id)
                     .setSmallIcon(R.drawable.ic_launcher_foreground)
-                    .setContentTitle("New Booking Request")
-                    .setContentText("You have a new booking request. ID: $bookingId")
+                    .setContentTitle(notificationTitle)
+                    .setContentText(notificationBody)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setContentIntent(pendingIntent)
                     .build()
