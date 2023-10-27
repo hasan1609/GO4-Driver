@@ -21,8 +21,7 @@
         android:id="@+id/status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Status"
-        android:visibility="gone"
+        android:text=""
         android:textStyle="bold" />
 
     <View
@@ -91,22 +90,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="Sampai"
+        android:text="Sampai lokasi jemput"
         android:visibility="gone"/>
     <Button
         android:id="@+id/btn_waypoint2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="Menuju Lokasi"
+        android:text="Menuju Lokasi tujuan"
         android:visibility="gone"/>
-    <Button
-        android:id="@+id/btn_tujuan"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Sampai Lokasi Tujuan"
-        android:visibility="gone"/>
+
     <Button
         android:id="@+id/btn_sampai"
         android:layout_width="match_parent"
@@ -119,6 +112,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="Sampai Lokasi Tujuan"
+        android:text="Selesai"
         android:visibility="gone"/>
 </LinearLayout>

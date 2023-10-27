@@ -3,10 +3,8 @@ package com.g4s.go4_driver.ui.activity
 import android.animation.ObjectAnimator
 import android.animation.TypeEvaluator
 import android.app.ProgressDialog
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
@@ -31,7 +29,10 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.gson.Gson
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.SphericalUtil
@@ -88,22 +89,25 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
     }
 
     private fun setupUi() {
-        if (order!!.kategori == "resto"){
-            status1 = "Menuju Lokasi Resto"
-            status2 = "Sampai Lokasi Resto"
-        }else{
-            status1 = "Menuju TItik Jemput"
-            status2 = "Sampai Titi Jemput"
-        }
         val type = binding.bottomSheetLayout.type
         when (order!!.kategori) {
             "resto" -> {
+                status1 = "Menuju Lokasi Resto"
+                status2 = "Sampai Lokasi Resto"
+                binding.bottomSheetLayout.btn_start.text = status1
+                binding.bottomSheetLayout.btn_waypoint.text = status2
                 type.setImageResource(R.drawable.makanan)
             }
             "mobil" -> {
+                status1 = "Menuju TItik Jemput"
+                status2 = "Sampai Titik Jemput"
+                binding.bottomSheetLayout.btn_start.text = status1
+                binding.bottomSheetLayout.btn_waypoint.text = status2
                 type.setImageResource(R.drawable.mobil)
             }
             else -> {
+                status1 = "Menuju TItik Jemput"
+                status2 = "Sampai Titik Jemput"
                 type.setImageResource(R.drawable.motor)
             }
         }
@@ -116,8 +120,40 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
                 .load(urlImage + foto)
                 .into(ft)
         }
+
+        when (order!!.status) {
+            "7" -> {
+                binding.bottomSheetLayout.btn_start.visibility = View.VISIBLE
+            }
+            "1" -> {
+                binding.bottomSheetLayout.status.text = "Menuju Waypoint"
+                isCheckingWaypoint = true
+                isCheckingDestination = false
+                registerLocationUpdateReceiver()
+                startLocationUpdates()
+            }
+            "2" -> {
+                binding.bottomSheetLayout.status.text = "Sampai Waypoint"
+                isCheckingWaypoint = false
+                isCheckingDestination = false
+                binding.bottomSheetLayout.btn_waypoint2.visibility = View.VISIBLE
+            }
+            "3" -> {
+                binding.bottomSheetLayout.status.text = "Menuju Destination"
+                isCheckingWaypoint = false
+                isCheckingDestination = true
+                registerLocationUpdateReceiver()
+                startLocationUpdates()
+            }
+            "4" -> {
+                binding.bottomSheetLayout.status.text = "Sampai Tujuan"
+                isCheckingWaypoint = false
+                isCheckingDestination = false
+                binding.bottomSheetLayout.btn_selesai.visibility = View.VISIBLE
+            }
+        }
+
         binding.bottomSheetLayout.nama.text = order!!.customer!!.nama
-        binding.bottomSheetLayout.btn_start.visibility = View.VISIBLE
         binding.bottomSheetLayout.btn_start.setOnClickListener {
             registerLocationUpdateReceiver()
             startLocationUpdates()
@@ -126,7 +162,6 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
                 checkDestination = false
             )
         }
-
         binding.bottomSheetLayout.btn_waypoint.setOnClickListener {
             updateStatus("2", status2.toString(), binding.bottomSheetLayout.btn_waypoint,
                 checkWaypoint = false,
@@ -137,7 +172,6 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
             binding.bottomSheetLayout.btn_waypoint2.visibility = View.VISIBLE
 
         }
-
         binding.bottomSheetLayout.btn_waypoint2.setOnClickListener {
             registerLocationUpdateReceiver()
             startLocationUpdates()
@@ -146,20 +180,163 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
                 checkDestination = true
             )
         }
-        binding.bottomSheetLayout.btn_tujuan.setOnClickListener {
-            updateStatus("4", "Sampai Lokasi Tujuan", binding.bottomSheetLayout.btn_waypoint,
+        binding.bottomSheetLayout.btn_sampai.setOnClickListener {
+            updateStatus("4", "Sampai Lokasi Tujuan", binding.bottomSheetLayout.btn_sampai,
                 checkWaypoint = false,
                 checkDestination = false
             )
-            binding.bottomSheetLayout.btn_sampai.visibility = View.VISIBLE
-        }
-        binding.bottomSheetLayout.btn_sampai.setOnClickListener {
-            binding.bottomSheetLayout.btn_sampai.visibility = View.GONE
             binding.bottomSheetLayout.btn_selesai.visibility = View.VISIBLE
         }
         binding.bottomSheetLayout.btn_selesai.setOnClickListener {
 
         }
+    }
+
+    private fun updateMapWithLocation(latitude: Double, longitude: Double) {
+        if (marker != null) {
+            val newLocation = LatLng(latitude, longitude)
+            val startPosition = marker!!.position // Posisi awal marker
+            val endPosition = newLocation // Posisi akhir marker (lokasi baru)
+
+            // Hitung arah dan rotasi motor (misalnya, sejajar dengan rute)
+            val bearing = SphericalUtil.computeHeading(startPosition, endPosition)
+
+            // Menghitung jarak antara posisi awal dan akhir
+            val distance = SphericalUtil.computeDistanceBetween(startPosition, endPosition)
+
+            // Animasi motor berjalan dari posisi awal ke posisi akhir dengan interval waktu tertentu
+            val duration = 2000L // Durasi animasi dalam milidetik (2 detik)
+
+            val interpolator = LinearInterpolator()
+            val animator = ObjectAnimator.ofObject(marker, "position",
+                TypeEvaluator<LatLng> { fraction, startValue, endValue ->
+                    return@TypeEvaluator SphericalUtil.interpolate(startValue, endValue,
+                        fraction.toDouble()
+                    )
+                },
+                startPosition, endPosition
+            )
+            animator.duration = duration
+            animator.interpolator = interpolator
+            animator.start()
+
+            // Rotasi motor (menghadap ke arah rute)
+            marker!!.rotation = bearing.toFloat()
+
+            // Anda juga dapat mengatur kamera agar mengikuti perjalanan motor:
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(newLocation))
+        }
+    }
+    private fun saveLocationToFirebase(latitude: Double, longitude: Double) {
+        // Anda perlu mengganti ini sesuai dengan Firebase Realtime Database atau Firestore Anda.
+        val database = FirebaseDatabase.getInstance()
+        val reference = database.getReference("perjalanan_pengemudi").child(sessionManager.getId().toString())
+
+        val locationData = TrackingModel(latitude, longitude)
+
+        // Lakukan pemeriksaan apakah referensi sudah berisi data atau tidak
+        reference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    // Referensi sudah berisi data, maka lakukan update
+                    reference.setValue(locationData)
+                } else {
+                    // Referensi kosong, maka buat entri baru
+                    reference.setValue(locationData)
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Penanganan kesalahan, jika diperlukan
+            }
+        })
+    }
+    private fun registerLocationUpdateReceiver() {
+        locationUpdateReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == "LOCATION_UPDATE") {
+                    val latitude = intent.getDoubleExtra("latitude", 0.0)
+                    val longitude = intent.getDoubleExtra("longitude", 0.0)
+                    currentLocation = Location("")
+                    currentLocation?.latitude = latitude
+                    currentLocation?.longitude = longitude
+                    updateMapWithLocation(latitude, longitude)
+                    // Memeriksa jarak ke waypoint dan lokasi tujuan setiap kali menerima pembaruan lokasi
+                    if (currentLocation != null) {
+                        if (isCheckingWaypoint && !isCheckingDestination)
+                        {
+                            checkDistanceToWaypoint(currentLocation!!)
+                        }else if(!isCheckingWaypoint && isCheckingDestination)
+                        {
+                            checkDistanceDestination(currentLocation!!)
+                        }
+                    }
+                }
+            }
+        }
+        val filter = IntentFilter("LOCATION_UPDATE")
+        this.registerReceiver(locationUpdateReceiver, filter)
+    }
+    private fun startLocationUpdates() {
+        // Mulai jadwal tugas penyimpanan setiap 5 detik
+        handler.postDelayed(saveLocationRunnable, 10000) // 5000 milidetik = 5 detik
+    }
+    private fun checkDistanceToWaypoint(currentLocation: Location) {
+        val waypointLocation = Location("")
+        waypointLocation.latitude = order!!.latitudeDari.toString().toDouble()
+        waypointLocation.longitude = order!!.longitudeDari.toString().toDouble()
+        val distanceToWaypoint = currentLocation.distanceTo(waypointLocation)
+        if (distanceToWaypoint < 50.0) {
+            binding.bottomSheetLayout.btn_waypoint.visibility = View.VISIBLE
+        }
+    }
+    private fun checkDistanceDestination(currentLocation: Location) {
+        val destinationLocation = Location("")
+        destinationLocation.latitude = order!!.latitudeTujuan.toString().toDouble()
+        destinationLocation.longitude = order!!.longitudeTujuan.toString().toDouble()
+        val distanceToDestination = currentLocation.distanceTo(destinationLocation)
+        if (distanceToDestination < 50.0) {
+            binding.bottomSheetLayout.btn_sampai.visibility = View.VISIBLE
+        }
+    }
+    // Fungsi untuk memeriksa apakah BroadcastReceiver aktif
+    fun isReceiverEnabled(context: Context, receiver: BroadcastReceiver): Boolean {
+        val intent = Intent(context, receiver.javaClass)
+        val packageManager = context.packageManager
+        val activities = packageManager.queryBroadcastReceivers(intent, 0)
+        return activities.size > 0
+    }
+    private fun updateStatus(status: String, nama: String, button: Button, checkWaypoint: Boolean, checkDestination: Boolean){
+        api.updateStatusOrder(order!!.idOrder.toString(), status).enqueue(object :
+            Callback<ResponsePostData> {
+            override fun onResponse(
+                call: Call<ResponsePostData>,
+                response: Response<ResponsePostData>
+            ) {
+                try {
+                    if (response.isSuccessful) {
+                        loading(false)
+                        isCheckingWaypoint = checkWaypoint
+                        isCheckingDestination = checkDestination
+                        button.visibility = View.GONE
+                        binding.bottomSheetLayout.status.text = nama
+
+                    } else {
+                        loading(false)
+                        toast("gagal mendapatkan response")
+                    }
+                } catch (e: Exception) {
+                    loading(false)
+                    info { "hasan ${e.message}" }
+                    toast(e.message.toString())
+                }
+            }
+            override fun onFailure(call: Call<ResponsePostData>, t: Throwable) {
+                loading(false)
+                info { "hasan ${t.message}" }
+                toast(t.message.toString())
+            }
+        })
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -223,7 +400,6 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
             setRoute(polyline.toString())
         }
     }
-
     // Fungsi untuk menggambar rute pada peta
     fun setRoute(polyline: String){
         val routeColor = ContextCompat.getColor(this, R.color.primary_color)
@@ -250,141 +426,6 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
         mMap.moveCamera(cameraUpdate)
     }
 
-    private fun updateMapWithLocation(latitude: Double, longitude: Double) {
-        if (marker != null) {
-            val newLocation = LatLng(latitude, longitude)
-            val startPosition = marker!!.position // Posisi awal marker
-            val endPosition = newLocation // Posisi akhir marker (lokasi baru)
-
-            // Hitung arah dan rotasi motor (misalnya, sejajar dengan rute)
-            val bearing = SphericalUtil.computeHeading(startPosition, endPosition)
-
-            // Menghitung jarak antara posisi awal dan akhir
-            val distance = SphericalUtil.computeDistanceBetween(startPosition, endPosition)
-
-            // Animasi motor berjalan dari posisi awal ke posisi akhir dengan interval waktu tertentu
-            val duration = 2000L // Durasi animasi dalam milidetik (2 detik)
-
-            val interpolator = LinearInterpolator()
-            val animator = ObjectAnimator.ofObject(marker, "position",
-                TypeEvaluator<LatLng> { fraction, startValue, endValue ->
-                    return@TypeEvaluator SphericalUtil.interpolate(startValue, endValue,
-                        fraction.toDouble()
-                    )
-                },
-                startPosition, endPosition
-            )
-            animator.duration = duration
-            animator.interpolator = interpolator
-            animator.start()
-
-            // Rotasi motor (menghadap ke arah rute)
-            marker!!.rotation = bearing.toFloat()
-
-            // Anda juga dapat mengatur kamera agar mengikuti perjalanan motor:
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(newLocation))
-        }
-    }
-
-
-    private fun saveLocationToFirebase(latitude: Double, longitude: Double) {
-        // Anda perlu mengganti ini sesuai dengan Firebase Realtime Database atau Firestore Anda.
-        val database = FirebaseDatabase.getInstance()
-        val reference = database.getReference("perjalanan_pengemudi").child(sessionManager.getId().toString())
-
-        // Buat objek yang berisi data lokasi pengemudi.
-        val locationData = TrackingModel(latitude, longitude)
-
-        // Simpan data lokasi ke Firebase Realtime Database dengan menggunakan `push` untuk menghasilkan ID unik.
-        reference.push().setValue(locationData)
-    }
-
-    private fun registerLocationUpdateReceiver() {
-        locationUpdateReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                if (intent?.action == "LOCATION_UPDATE") {
-                    val latitude = intent.getDoubleExtra("latitude", 0.0)
-                    val longitude = intent.getDoubleExtra("longitude", 0.0)
-                    currentLocation = Location("")
-                    currentLocation?.latitude = latitude
-                    currentLocation?.longitude = longitude
-                    updateMapWithLocation(latitude, longitude)
-                    // Memeriksa jarak ke waypoint dan lokasi tujuan setiap kali menerima pembaruan lokasi
-                    if (currentLocation != null) {
-                        if (isCheckingWaypoint && !isCheckingDestination)
-                        {
-                            checkDistanceToWaypoint(currentLocation!!)
-                        }else if(!isCheckingWaypoint && isCheckingDestination)
-                        {
-                            checkDistanceDestination(currentLocation!!)
-                        }
-                    }
-                }
-            }
-        }
-        val filter = IntentFilter("LOCATION_UPDATE")
-        this.registerReceiver(locationUpdateReceiver, filter)
-    }
-
-    private fun startLocationUpdates() {
-        // Mulai jadwal tugas penyimpanan setiap 5 detik
-        handler.postDelayed(saveLocationRunnable, 10000) // 5000 milidetik = 5 detik
-    }
-
-    private fun checkDistanceToWaypoint(currentLocation: Location) {
-        val waypointLocation = Location("")
-        waypointLocation.latitude = order!!.latitudeDari.toString().toDouble()
-        waypointLocation.longitude = order!!.longitudeDari.toString().toDouble()
-        val distanceToWaypoint = currentLocation.distanceTo(waypointLocation)
-        if (distanceToWaypoint < 50.0) {
-            binding.bottomSheetLayout.btn_waypoint.text = "Sampai Lokasi"
-            binding.bottomSheetLayout.btn_waypoint.visibility = View.VISIBLE
-        }
-    }
-    private fun checkDistanceDestination(currentLocation: Location) {
-        val destinationLocation = Location("")
-        destinationLocation.latitude = order!!.latitudeTujuan.toString().toDouble()
-        destinationLocation.longitude = order!!.longitudeTujuan.toString().toDouble()
-        val distanceToDestination = currentLocation.distanceTo(destinationLocation)
-        if (distanceToDestination < 50.0) {
-            binding.bottomSheetLayout.btn_waypoint.text = "Selesai"
-            binding.bottomSheetLayout.btn_tujuan.visibility = View.VISIBLE
-        }
-    }
-
-    private fun updateStatus(status: String, nama: String, button: Button, checkWaypoint: Boolean, checkDestination: Boolean){
-        api.updateStatusOrder(order!!.idOrder.toString(), status).enqueue(object :
-            Callback<ResponsePostData> {
-            override fun onResponse(
-                call: Call<ResponsePostData>,
-                response: Response<ResponsePostData>
-            ) {
-                try {
-                    if (response.isSuccessful) {
-                        loading(false)
-                        isCheckingWaypoint = checkWaypoint
-                        isCheckingDestination = checkDestination
-                        button.visibility = View.GONE
-                        binding.bottomSheetLayout.status.visibility = View.VISIBLE
-                        binding.bottomSheetLayout.status.text = nama
-
-                    } else {
-                        loading(false)
-                        toast("gagal mendapatkan response")
-                    }
-                } catch (e: Exception) {
-                    loading(false)
-                    info { "hasan ${e.message}" }
-                    toast(e.message.toString())
-                }
-            }
-            override fun onFailure(call: Call<ResponsePostData>, t: Throwable) {
-                loading(false)
-                info { "hasan ${t.message}" }
-                toast(t.message.toString())
-            }
-        })
-    }
 
     private fun loading(isLoading: Boolean) {
         if (isLoading) {

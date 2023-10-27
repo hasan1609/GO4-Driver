@@ -147,7 +147,7 @@ class RiwayatOrderAdapter (
                     status.setTextColor(context.getColor(R.color.primary_color))
                 }
                 "1" -> {
-                    status.text = "Nenuju lokasi penjemputan"
+                    status.text = "Menuju lokasi penjemputan"
                     status.setTextColor(context.getColor(R.color.primary_color))
                 }
                 "2" -> {
