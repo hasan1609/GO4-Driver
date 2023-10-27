@@ -1,6 +1,7 @@
 package com.g4s.go4_driver.utils
 
 import android.app.AlertDialog
+import android.app.ProgressDialog
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
@@ -28,8 +29,20 @@ import retrofit2.Response
 
 class AlertOrderUtils(private val context: Context){
     val api = ApiClient.instance()
+    private var progressDialog: ProgressDialog? = null
+    private val shownOrderIds = HashSet<String>()
     fun showAlertDialog(order: ResponseCekBooking) {
+        val orderId = order.data?.idOrder
+
+        // Periksa apakah id pesanan sudah ditampilkan sebelumnya
+        if (orderId != null && shownOrderIds.contains(orderId)) {
+            // Pesanan dengan id yang sama sudah ditampilkan, abaikan
+            return
+        }
+
+        shownOrderIds.add(orderId.toString())
         val builder = AlertDialog.Builder(context)
+        progressDialog = ProgressDialog(context)
         val dialogView = LayoutInflater.from(context).inflate(R.layout.custom_alert_recive_booking, null)
         val txtKode = dialogView.txt_kode
         val txtJenisOrder = dialogView.txt_jenis_order
@@ -48,6 +61,7 @@ class AlertOrderUtils(private val context: Context){
         // Menambahkan view yang telah diinisialisasi ke dalam builder
         builder.setView(dialogView)
         val alertDialog = builder.create()
+        alertDialog.setCancelable(false)
         alertDialog.show()
 
         // Mengatur aksi ketika tombol Terima diklik
@@ -66,6 +80,7 @@ class AlertOrderUtils(private val context: Context){
     }
 
     private fun updateStatus(id: String, status: String, orderLog: OrderLogModel){
+        loading(true)
         api.updateStatusOrder(id, status).enqueue(object :
             Callback<ResponsePostData> {
             override fun onResponse(
@@ -73,29 +88,43 @@ class AlertOrderUtils(private val context: Context){
                 response: Response<ResponsePostData>
             ) {
                 try {
+                    loading(false)
                     if (response.isSuccessful) {
+                        loading(false)
                         if (status == "7"){
-//                            val gson = Gson()
-//                            val orderJson = gson.fromJson(orderLog.toString(), OrderLogModel::class.java)
-//                            context.startActivity<TrackingOrderActivity>("order" to orderJson)
+                            val gson = Gson()
+                            val orderJson = gson.toJson(orderLog)
                             Toast.makeText(context, "Order Diterima", Toast.LENGTH_SHORT).show()
+                            context.startActivity<TrackingOrderActivity>("order" to orderJson)
                         }else{
                             Toast.makeText(context, "Order Ditolak", Toast.LENGTH_SHORT).show()
                         }
                     } else {
-                        Toast.makeText(context, response.message(), Toast.LENGTH_SHORT).show()
+                        loading(false)
+                        Log.d("oe", response.toString())
+                        Toast.makeText(context, "Kesalahan Response", Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
+                    loading(false)
                     Log.d("hasan", e.message.toString())
-                    Log.e("ahhhh", status)
                     Toast.makeText(context, "Kesalahan Response", Toast.LENGTH_SHORT).show()
                 }
             }
             override fun onFailure(call: Call<ResponsePostData>, t: Throwable) {
+                loading(false)
                 Log.d("hasan", t.message.toString())
-                Toast.makeText(context, "Kesalahan Response", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Kesalahan Jaringan", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
+    private fun loading(isLoading: Boolean) {
+        if (isLoading) {
+            progressDialog!!.setMessage("Tunggu sebentar...")
+            progressDialog!!.setCancelable(false)
+            progressDialog!!.show()
+        } else {
+            progressDialog!!.dismiss()
+        }
+    }
 }

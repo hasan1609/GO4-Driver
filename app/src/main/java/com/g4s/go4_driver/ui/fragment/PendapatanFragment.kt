@@ -1,6 +1,10 @@
 package com.g4s.go4_driver.ui.fragment
 
 import android.app.ProgressDialog
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -13,10 +17,12 @@ import com.g4s.go4_driver.adapter.RiwayatOrderAdapter
 import com.g4s.go4_driver.databinding.FragmentPendapatanBinding
 import com.g4s.go4_driver.model.DataLogOrder
 import com.g4s.go4_driver.model.OrderLogModel
+import com.g4s.go4_driver.model.ResponseCekBooking
 import com.g4s.go4_driver.model.ResponseOrderLog
 import com.g4s.go4_driver.session.SessionManager
 import com.g4s.go4_driver.ui.activity.DetailRiwayatOrderActivity
 import com.g4s.go4_driver.ui.activity.TrackingOrderActivity
+import com.g4s.go4_driver.utils.AlertOrderUtils
 import com.g4s.go4_driver.webservice.ApiClient
 import com.google.gson.Gson
 import org.jetbrains.anko.AnkoLogger
@@ -38,6 +44,16 @@ class PendapatanFragment : Fragment(), AnkoLogger {
     private lateinit var mAdapter: RiwayatOrderAdapter
     lateinit var sessionManager: SessionManager
     private lateinit var progressDialog: ProgressDialog
+    private lateinit var alertOrderUtils: AlertOrderUtils
+
+    // Register receiver for location updates
+    private val orderReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val responseDataJson = intent!!.getStringExtra("response_data")
+            val responseData = Gson().fromJson(responseDataJson, ResponseCekBooking::class.java)
+            alertOrderUtils.showAlertDialog(responseData)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,6 +64,10 @@ class PendapatanFragment : Fragment(), AnkoLogger {
         sessionManager = SessionManager(requireActivity())
         progressDialog = ProgressDialog(requireActivity())
         binding.txtTgl.text = LocalDate.now().toString()
+
+        val filter2 = IntentFilter("CEK_BOOKING")
+        requireActivity().registerReceiver(orderReceiver, filter2)
+
         return binding.root
     }
 
@@ -91,15 +111,15 @@ class PendapatanFragment : Fragment(), AnkoLogger {
                                 mAdapter.setDialog(object : RiwayatOrderAdapter.Dialog {
                                     override fun onClick(position: Int, order: OrderLogModel, status: String) {
                                         when (status) {
-                                            "0", "1", "2", "3" -> {
+                                            "0", "1", "2", "3", "4", "7" -> {
                                                 val gson = Gson()
                                                 val noteJoson = gson.toJson(order)
                                                 startActivity<TrackingOrderActivity>("order" to noteJoson)
                                             }
                                             else -> {
-//                                                val intent = intentFor<DetailRiwayatOrderActivity>()
-//                                                    .putExtra("idOrder", idOrder)
-//                                                startActivity(intent)
+                                                val intent = intentFor<DetailRiwayatOrderActivity>()
+                                                    .putExtra("idOrder", order.idOrder)
+                                                startActivity(intent)
                                             }
                                         }
                                     }
@@ -142,5 +162,10 @@ class PendapatanFragment : Fragment(), AnkoLogger {
     override fun onStart() {
         super.onStart()
         getData(sessionManager.getId().toString())
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        requireActivity().unregisterReceiver(orderReceiver)
     }
 }

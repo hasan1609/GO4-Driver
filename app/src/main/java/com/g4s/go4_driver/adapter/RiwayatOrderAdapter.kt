@@ -50,7 +50,7 @@ class RiwayatOrderAdapter (
         val ordersByStatus = listData.groupBy { it.order?.status }
 
         // Menambahkan header "Sedang Proses" jika ada pesanan dengan status 0, 1, 2, 3
-        val sedangProsesOrders = ordersByStatus.filterKeys { it in listOf("0", "1", "2", "3", "4") }.values.flatten()
+        val sedangProsesOrders = ordersByStatus.filterKeys { it in listOf("0", "1", "2", "3", "4","7") }.values.flatten()
         if (sedangProsesOrders.isNotEmpty()) {
             val sedangProsesHeader = OrderHeader("Sedang Proses")
             items.add(sedangProsesHeader)
@@ -58,7 +58,7 @@ class RiwayatOrderAdapter (
         }
 
         // Menambahkan header "Selesai" jika ada pesanan dengan status 4, 5
-        val selesaiOrders = ordersByStatus.filterKeys { it in listOf("5") }.values.flatten()
+        val selesaiOrders = ordersByStatus.filterKeys { it in listOf("5","6") }.values.flatten()
         if (selesaiOrders.isNotEmpty()) {
             val selesaiHeader = OrderHeader("Selesai")
             items.add(selesaiHeader)
@@ -144,24 +144,35 @@ class RiwayatOrderAdapter (
             when (order.order.status) {
                 "0" -> {
                     status.text = "Menunngu Konfirmasi"
+                    status.setTextColor(context.getColor(R.color.primary_color))
                 }
                 "1" -> {
                     status.text = "Nenuju lokasi penjemputan"
+                    status.setTextColor(context.getColor(R.color.primary_color))
                 }
                 "2" -> {
                     status.text = "Sampai Titik Jemput"
+                    status.setTextColor(context.getColor(R.color.primary_color))
                 }
                 "3" -> {
                     status.text = "Menuju lokasi Tujuan"
+                    status.setTextColor(context.getColor(R.color.primary_color))
                 }
                 "4" -> {
                     status.text = "Sampai pada tujuan"
+                    status.setTextColor(context.getColor(R.color.primary_color))
                 }
                 "5" -> {
                     status.text = "Selesai"
+                    status.setTextColor(context.getColor(R.color.teal_700))
+                }
+                "7" -> {
+                    status.text = "Order Diterima"
+                    status.setTextColor(context.getColor(R.color.primary_color))
                 }
                 else -> {
                     status.text = "Ditolak"
+                    status.setTextColor(context.getColor(R.color.red))
                 }
             }
             itemView.setOnClickListener {
@@ -230,11 +241,15 @@ class RiwayatOrderAdapter (
                 }
                 "4" -> {
                     status.text = "Sampai Lokasi Pengantaran"
-                    status.setTextColor(context.getColor(R.color.teal_700))
+                    status.setTextColor(context.getColor(R.color.primary_color))
                 }
                 "5" -> {
                     status.text = "Selesai"
                     status.setTextColor(context.getColor(R.color.teal_700))
+                }
+                "7" -> {
+                    status.text = "Order Diterima"
+                    status.setTextColor(context.getColor(R.color.primary_color))
                 }
                 else -> {
                     status.text = "Ditolak"

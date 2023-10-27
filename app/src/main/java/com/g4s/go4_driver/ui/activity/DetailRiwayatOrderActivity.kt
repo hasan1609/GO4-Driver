@@ -1,6 +1,10 @@
 package com.g4s.go4_driver.ui.activity
 
 import android.app.ProgressDialog
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -10,8 +14,11 @@ import com.g4s.go4_driver.R
 import com.g4s.go4_driver.adapter.ItemLogOrderRestoAdapter
 import com.g4s.go4_driver.databinding.ActivityDetailRiwayatOrderBinding
 import com.g4s.go4_driver.model.ProdukOrderModel
+import com.g4s.go4_driver.model.ResponseCekBooking
 import com.g4s.go4_driver.model.ResponseDetailLogOrder
+import com.g4s.go4_driver.utils.AlertOrderUtils
 import com.g4s.go4_driver.webservice.ApiClient
+import com.google.gson.Gson
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 import org.jetbrains.anko.toast
@@ -31,6 +38,16 @@ class DetailRiwayatOrderActivity : AppCompatActivity() , AnkoLogger {
     companion object {
         const val idOrder = "idOrder"
     }
+    private lateinit var alertOrderUtils: AlertOrderUtils
+
+    // Register receiver for location updates
+    private val orderReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val responseDataJson = intent!!.getStringExtra("response_data")
+            val responseData = Gson().fromJson(responseDataJson, ResponseCekBooking::class.java)
+            alertOrderUtils.showAlertDialog(responseData)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +59,9 @@ class DetailRiwayatOrderActivity : AppCompatActivity() , AnkoLogger {
         binding.toolbar.backButton.setOnClickListener{
             finish()
         }
+
+        val filter2 = IntentFilter("CEK_BOOKING")
+        this.registerReceiver(orderReceiver, filter2)
         getData(data.toString())
     }
 
@@ -123,5 +143,10 @@ class DetailRiwayatOrderActivity : AppCompatActivity() , AnkoLogger {
         } else {
             progressDialog.dismiss()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        this.unregisterReceiver(orderReceiver)
     }
 }

@@ -57,13 +57,13 @@ class HomeFragment : Fragment(), AnkoLogger, OnMapReadyCallback {
     private var currentLocationMarker: Marker? = null
 
     // Register receiver for location updates
-    private val orderReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            val responseDataJson = intent!!.getStringExtra("response_data")
-            val responseData = Gson().fromJson(responseDataJson, ResponseCekBooking::class.java)
-            alertOrderUtils.showAlertDialog(responseData)
+        private val orderReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val responseDataJson = intent!!.getStringExtra("response_data")
+                val responseData = Gson().fromJson(responseDataJson, ResponseCekBooking::class.java)
+                alertOrderUtils.showAlertDialog(responseData)
+            }
         }
-    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

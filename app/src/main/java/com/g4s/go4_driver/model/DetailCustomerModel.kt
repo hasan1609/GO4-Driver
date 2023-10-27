@@ -8,7 +8,7 @@ data class DetailCustomerModel(
 	val idDetail: String? = null,
 
 	@field:SerializedName("foto")
-	val foto: Any? = null,
+	val foto: String? = null,
 
 	@field:SerializedName("updated_at")
 	val updatedAt: Any? = null,

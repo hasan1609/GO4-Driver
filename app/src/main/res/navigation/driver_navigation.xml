@@ -15,9 +15,4 @@
         android:name="com.g4s.go4_driver.ui.fragment.PendapatanFragment"
         android:label="fragment_pendapatan"
         tools:layout="@layout/fragment_pendapatan" />
-    <fragment
-        android:id="@+id/chatFragment"
-        android:name="com.g4s.go4_driver.ui.fragment.ChatFragment"
-        android:label="fragment_pendapatan"
-        tools:layout="@layout/fragment_chat" />
 </navigation>

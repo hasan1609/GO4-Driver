@@ -1,5 +1,7 @@
 package com.g4s.go4_driver.ui.activity
 
+import android.animation.ObjectAnimator
+import android.animation.TypeEvaluator
 import android.app.ProgressDialog
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -12,6 +14,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.view.animation.LinearInterpolator
 import android.widget.Button
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -92,19 +95,28 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
             status1 = "Menuju TItik Jemput"
             status2 = "Sampai Titi Jemput"
         }
+        val type = binding.bottomSheetLayout.type
+        when (order!!.kategori) {
+            "resto" -> {
+                type.setImageResource(R.drawable.makanan)
+            }
+            "mobil" -> {
+                type.setImageResource(R.drawable.mobil)
+            }
+            else -> {
+                type.setImageResource(R.drawable.motor)
+            }
+        }
         val urlImage = this.getString(R.string.urlImage)
         val foto = order!!.detailCustomer!!.foto.toString()
         var def = "/public/images/no_image.png"
         val ft = binding.bottomSheetLayout.foto
-        if (foto  != null) {
+        if (order!!.detailCustomer!!.foto != null) {
             Picasso.get()
                 .load(urlImage + foto)
                 .into(ft)
-        } else {
-            Picasso.get()
-                .load(urlImage + def)
-                .into(ft)
         }
+        binding.bottomSheetLayout.nama.text = order!!.customer!!.nama
         binding.bottomSheetLayout.btn_start.visibility = View.VISIBLE
         binding.bottomSheetLayout.btn_start.setOnClickListener {
             registerLocationUpdateReceiver()
@@ -239,15 +251,41 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
     }
 
     private fun updateMapWithLocation(latitude: Double, longitude: Double) {
-        // Pastikan Anda memiliki marker pengemudi yang telah dibuat sebelumnya.
-        // Jika Anda belum membuatnya, Anda dapat membuatnya di sini atau di `onMapReady`.
         if (marker != null) {
             val newLocation = LatLng(latitude, longitude)
-            marker!!.position = newLocation
-            // Anda juga dapat mengatur kamera agar mengikuti perjalanan pengemudi:
+            val startPosition = marker!!.position // Posisi awal marker
+            val endPosition = newLocation // Posisi akhir marker (lokasi baru)
+
+            // Hitung arah dan rotasi motor (misalnya, sejajar dengan rute)
+            val bearing = SphericalUtil.computeHeading(startPosition, endPosition)
+
+            // Menghitung jarak antara posisi awal dan akhir
+            val distance = SphericalUtil.computeDistanceBetween(startPosition, endPosition)
+
+            // Animasi motor berjalan dari posisi awal ke posisi akhir dengan interval waktu tertentu
+            val duration = 2000L // Durasi animasi dalam milidetik (2 detik)
+
+            val interpolator = LinearInterpolator()
+            val animator = ObjectAnimator.ofObject(marker, "position",
+                TypeEvaluator<LatLng> { fraction, startValue, endValue ->
+                    return@TypeEvaluator SphericalUtil.interpolate(startValue, endValue,
+                        fraction.toDouble()
+                    )
+                },
+                startPosition, endPosition
+            )
+            animator.duration = duration
+            animator.interpolator = interpolator
+            animator.start()
+
+            // Rotasi motor (menghadap ke arah rute)
+            marker!!.rotation = bearing.toFloat()
+
+            // Anda juga dapat mengatur kamera agar mengikuti perjalanan motor:
             mMap.animateCamera(CameraUpdateFactory.newLatLng(newLocation))
         }
     }
+
 
     private fun saveLocationToFirebase(latitude: Double, longitude: Double) {
         // Anda perlu mengganti ini sesuai dengan Firebase Realtime Database atau Firestore Anda.
@@ -290,7 +328,7 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
 
     private fun startLocationUpdates() {
         // Mulai jadwal tugas penyimpanan setiap 5 detik
-        handler.postDelayed(saveLocationRunnable, 5000) // 5000 milidetik = 5 detik
+        handler.postDelayed(saveLocationRunnable, 10000) // 5000 milidetik = 5 detik
     }
 
     private fun checkDistanceToWaypoint(currentLocation: Location) {
@@ -327,7 +365,8 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
                         isCheckingWaypoint = checkWaypoint
                         isCheckingDestination = checkDestination
                         button.visibility = View.GONE
-                        binding.bottomSheetLayout.nama.text = nama
+                        binding.bottomSheetLayout.status.visibility = View.VISIBLE
+                        binding.bottomSheetLayout.status.text = nama
 
                     } else {
                         loading(false)

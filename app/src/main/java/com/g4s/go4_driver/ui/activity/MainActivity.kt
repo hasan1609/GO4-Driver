@@ -2,6 +2,7 @@ package com.g4s.go4_driver.ui.activity
 
 import android.Manifest
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.AlertDialog
 import android.content.*
 import android.content.pm.PackageManager
@@ -44,13 +45,6 @@ class MainActivity : AppCompatActivity() {
                     ).commit()
                     return@OnNavigationItemSelectedListener true
                 }
-                R.id.nav_chat -> {
-                    supportFragmentManager.beginTransaction().replace(
-                        R.id.flFragment,
-                        ChatFragment()
-                    ).commit()
-                    return@OnNavigationItemSelectedListener true
-                }
             }
             false
         }
@@ -63,6 +57,9 @@ class MainActivity : AppCompatActivity() {
         navView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener)
         // Memulai service cek booking dengan parameter user_id
         val serviceIntent = Intent(this, CekBookingService::class.java)
+        if (!isMyServiceRunning(CekBookingService::class.java)) {
+            startService(serviceIntent)
+        }
         serviceIntent.putExtra("user_id", sessionManager.getId())
         startService(serviceIntent)
         moveToFragment(HomeFragment())
@@ -74,5 +71,15 @@ class MainActivity : AppCompatActivity() {
         fragmentTrans.commit()
     }
 
-
+    // Fungsi untuk memeriksa apakah layanan berjalan atau tidak
+    private fun isMyServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val services = manager.getRunningServices(Integer.MAX_VALUE)
+        for (service in services) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
+    }
 }
