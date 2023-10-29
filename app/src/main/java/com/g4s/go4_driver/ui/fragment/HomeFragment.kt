@@ -83,9 +83,16 @@ class HomeFragment : Fragment(), AnkoLogger, OnMapReadyCallback {
                 if (snapshot.exists()) {
                     loading(false)
                     binding.statusDriver.setImageResource(R.drawable.ic_switch_on)
-                    binding.txtStatus.text = "On"
-                    binding.txtStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary_color))
                     startLocationService()
+                    // Dapatkan status dari snapshot
+                    val userStatus = snapshot.child("status").getValue(String::class.java)
+                    if (userStatus == "active") {
+                        binding.txtStatus.text = "On"
+                        binding.txtStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.red))
+                    } else if (userStatus == "busy") {
+                        binding.txtStatus.text = "Busy" // Mengganti teks untuk status "sibuk"
+                        binding.txtStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.red)) // Mengubah warna teks untuk status "sibuk"
+                    }
                 } else {
                     loading(false)
                     binding.statusDriver.setImageResource(R.drawable.ic_switch_off)

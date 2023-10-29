@@ -113,14 +113,12 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
         }
         val urlImage = this.getString(R.string.urlImage)
         val foto = order!!.detailCustomer!!.foto.toString()
-        var def = "/public/images/no_image.png"
         val ft = binding.bottomSheetLayout.foto
         if (order!!.detailCustomer!!.foto != null) {
             Picasso.get()
                 .load(urlImage + foto)
                 .into(ft)
         }
-
         when (order!!.status) {
             "7" -> {
                 binding.bottomSheetLayout.btn_start.visibility = View.VISIBLE
@@ -152,7 +150,6 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
                 binding.bottomSheetLayout.btn_selesai.visibility = View.VISIBLE
             }
         }
-
         binding.bottomSheetLayout.nama.text = order!!.customer!!.nama
         binding.bottomSheetLayout.btn_start.setOnClickListener {
             registerLocationUpdateReceiver()
@@ -188,7 +185,6 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
             binding.bottomSheetLayout.btn_selesai.visibility = View.VISIBLE
         }
         binding.bottomSheetLayout.btn_selesai.setOnClickListener {
-
         }
     }
 
@@ -205,7 +201,7 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
             val distance = SphericalUtil.computeDistanceBetween(startPosition, endPosition)
 
             // Animasi motor berjalan dari posisi awal ke posisi akhir dengan interval waktu tertentu
-            val duration = 2000L // Durasi animasi dalam milidetik (2 detik)
+            val duration = 10000L // Durasi animasi dalam milidetik (2 detik)
 
             val interpolator = LinearInterpolator()
             val animator = ObjectAnimator.ofObject(marker, "position",
@@ -231,9 +227,7 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
         // Anda perlu mengganti ini sesuai dengan Firebase Realtime Database atau Firestore Anda.
         val database = FirebaseDatabase.getInstance()
         val reference = database.getReference("perjalanan_pengemudi").child(sessionManager.getId().toString())
-
         val locationData = TrackingModel(latitude, longitude)
-
         // Lakukan pemeriksaan apakah referensi sudah berisi data atau tidak
         reference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -338,7 +332,6 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
             }
         })
     }
-
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         val markerTujuan = BitmapDescriptorFactory.fromResource(R.drawable.ic_pinmap)
@@ -425,7 +418,6 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
         val cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, padding)
         mMap.moveCamera(cameraUpdate)
     }
-
 
     private fun loading(isLoading: Boolean) {
         if (isLoading) {
