@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.g4s.go4_driver.R
-import com.g4s.go4_driver.model.ChatModel
 
 class DetailChatAdapter(
     val context: Context,

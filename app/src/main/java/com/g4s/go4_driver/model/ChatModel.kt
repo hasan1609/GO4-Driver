@@ -1,13 +1,10 @@
 package com.g4s.go4_driver.model
 
-class ChatModel {
-    var pesan: String? = null
-    var senderId: String? = null
-
-    constructor(){}
-
-    constructor(pesan: String?, senderId: String?){
-        this.pesan = pesan
-        this.senderId = senderId
-    }
-}
+data class ChatModel(
+    val sender: String? = null,
+    val message: String? = null,
+    val receiver: String? = null,
+    val url: String? = null,
+    val messageId: String? = null,
+    val date: String? = null
+)

@@ -6,7 +6,6 @@ import androidx.databinding.DataBindingUtil
 import com.g4s.go4_driver.R
 import com.g4s.go4_driver.adapter.DetailChatAdapter
 import com.g4s.go4_driver.databinding.ActivityChatBinding
-import com.g4s.go4_driver.model.ChatModel
 import com.g4s.go4_driver.session.SessionManager
 
 class ChatActivity : AppCompatActivity() {
