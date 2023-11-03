@@ -12,6 +12,13 @@ interface ApiService {
         @Field("password") password: String,
         @Field("fcm") fcm: String
     ): Call<ResponseLogin>
+    // update password
+    @POST("update-password")
+    fun updatePassword(
+        @Field("id") id: String,
+        @Field("current_password") current_password: String,
+        @Field("password") password: String,
+    ): Call<ResponsePostData>
 
     // TODO: ORDER
     // get order log

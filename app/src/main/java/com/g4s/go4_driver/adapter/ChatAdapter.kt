@@ -13,11 +13,9 @@ import com.bumptech.glide.Glide
 import com.g4s.go4_driver.R
 import com.g4s.go4_driver.model.ChatModel
 import com.g4s.go4_driver.model.OrderLogModel
+import com.g4s.go4_driver.ui.activity.ViewFullImageActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
-import de.hdodenhof.circleimageview.CircleImageView
 
 class ChatAdapter(val order: OrderLogModel) :
     RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
@@ -30,7 +28,7 @@ class ChatAdapter(val order: OrderLogModel) :
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (chatList[position].sender.equals(order.customerId)) {
+        return if (chatList[position].sender.equals(order.driverId)) {
             1
         } else {
             0
@@ -55,7 +53,7 @@ class ChatAdapter(val order: OrderLogModel) :
         val chat = chatList[position]
         if (chat.message.equals("sent you an image.") && !chat.url.equals("")) {
 //        Right Message
-            if (chat.sender.equals(order.customerId)) {
+            if (chat.sender.equals(order.driverId)) {
                 holder.show_text_message?.visibility = View.GONE
                 holder.right_image_view?.visibility = View.VISIBLE
                 Glide.with(holder.itemView.context).load(chat.url)
@@ -63,12 +61,11 @@ class ChatAdapter(val order: OrderLogModel) :
 
                 holder.right_image_view?.setOnClickListener {
                     val options = arrayOf<CharSequence>(
-                        "View Full Image",
-                        "Delete Image",
-                        "Cancel"
+                        "Lihat Gambar",
+                        "Hapus Gambar",
+                        "Batal"
                     )
                     val builder = MaterialAlertDialogBuilder(holder.itemView.context)
-                    builder.setTitle("What do you want ? ")
                     builder.setItems(options) { dialog, which ->
                         if (which == 0) {
                             val intent = Intent(
@@ -88,7 +85,7 @@ class ChatAdapter(val order: OrderLogModel) :
                 }
             }
 //        Left Message
-            else if (!chat.sender.equals(order.customerId)) {
+            else if (!chat.sender.equals(order.driverId)) {
                 holder.show_text_message?.visibility = View.GONE
                 holder.left_image_view?.visibility = View.VISIBLE
                 Glide.with(holder.itemView.context).load(chat.url)
@@ -96,11 +93,10 @@ class ChatAdapter(val order: OrderLogModel) :
 
                 holder.left_image_view?.setOnClickListener {
                     val options = arrayOf<CharSequence>(
-                        "View Full Image",
-                        "Cancel"
+                        "Lihat Gambar",
+                        "Batal"
                     )
                     val builder = MaterialAlertDialogBuilder(holder.itemView.context)
-                    builder.setTitle("What do you want ? ")
                     builder.setItems(options) { dialog, which ->
                         if (which == 0) {
                             val intent = Intent(
@@ -119,15 +115,13 @@ class ChatAdapter(val order: OrderLogModel) :
             }
         } else {
             holder.show_text_message?.text = chat.message
-
-            if (order.customerId == chat.sender) {
+            if (order.driverId == chat.sender) {
                 holder.show_text_message?.setOnClickListener {
                     val options = arrayOf<CharSequence>(
-                        "Delete Message",
-                        "Cancel"
+                        "Hapus Gambar",
+                        "Batal"
                     )
                     val builder = MaterialAlertDialogBuilder(holder.itemView.context)
-                    builder.setTitle("What do you want ? ")
                     builder.setItems(options) { dialog, which ->
                         if(which == 0) {
                             deleteSentMessage(position,holder)
@@ -176,7 +170,7 @@ class ChatAdapter(val order: OrderLogModel) :
         }
     }
 
-    private fun deleteSentMessage(position: Int, holder: ChatAdapter.ChatViewHolder) {
+    private fun deleteSentMessage(position: Int, holder: ChatViewHolder) {
         val ref = FirebaseDatabase.getInstance().reference.child("Chats")
             .child(chatList[position].messageId!!)
             .removeValue()
@@ -186,7 +180,7 @@ class ChatAdapter(val order: OrderLogModel) :
                 } else {
                     Toast.makeText(
                         holder.itemView.context,
-                        "Failed, Not Deleted",
+                        "Gagal dihapus",
                         Toast.LENGTH_SHORT
                     ).show()
                 }

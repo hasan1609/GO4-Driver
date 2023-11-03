@@ -44,6 +44,9 @@ class ProfileActivity : AppCompatActivity() {
         binding.ulasan.setOnClickListener {
             startActivity<UlasanActivity>()
         }
+        binding.updtPwd.setOnClickListener {
+            startActivity<UpdatePasswordActivity>()
+        }
         binding.logout.setOnClickListener {
             val builder = AlertDialog.Builder(this)
             builder.setMessage("Logout ? ")

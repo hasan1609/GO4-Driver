@@ -41,6 +41,7 @@ import kotlinx.android.synthetic.main.bottomsheet_data_customer.view.*
 import org.greenrobot.eventbus.EventBus
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
+import org.jetbrains.anko.startActivity
 import org.jetbrains.anko.toast
 import retrofit2.Call
 import retrofit2.Callback
@@ -147,7 +148,7 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
                 binding.bottomSheetLayout.status.text = "Sampai Tujuan"
                 isCheckingWaypoint = false
                 isCheckingDestination = false
-                binding.bottomSheetLayout.btn_selesai.visibility = View.VISIBLE
+//                binding.bottomSheetLayout.btn_selesai.visibility = View.VISIBLE
             }
         }
         binding.bottomSheetLayout.nama.text = order!!.customer!!.nama
@@ -182,9 +183,9 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
                 checkWaypoint = false,
                 checkDestination = false
             )
-            binding.bottomSheetLayout.btn_selesai.visibility = View.VISIBLE
         }
-        binding.bottomSheetLayout.btn_selesai.setOnClickListener {
+        binding.bottomSheetLayout.chat.setOnClickListener {
+            startActivity<ChatActivity>("order" to intent.getStringExtra("order"))
         }
     }
 
@@ -294,7 +295,7 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
         }
     }
     // Fungsi untuk memeriksa apakah BroadcastReceiver aktif
-    fun isReceiverEnabled(context: Context, receiver: BroadcastReceiver): Boolean {
+    private fun isReceiverEnabled(context: Context, receiver: BroadcastReceiver): Boolean {
         val intent = Intent(context, receiver.javaClass)
         val packageManager = context.packageManager
         val activities = packageManager.queryBroadcastReceivers(intent, 0)
@@ -418,7 +419,6 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
         val cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, padding)
         mMap.moveCamera(cameraUpdate)
     }
-
     private fun loading(isLoading: Boolean) {
         if (isLoading) {
             progressDialog.setMessage("Tunggu sebentar...")
@@ -428,7 +428,6 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
             progressDialog.dismiss()
         }
     }
-
     override fun onDestroy() {
         super.onDestroy()
         EventBus.getDefault().unregister(this)
