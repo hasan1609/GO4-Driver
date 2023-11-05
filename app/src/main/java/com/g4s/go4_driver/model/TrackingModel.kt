@@ -8,4 +8,5 @@ data class TrackingModel (
 
     @field:SerializedName("longitude")
     val longitude: Double? = null,
+
 )

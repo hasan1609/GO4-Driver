@@ -121,24 +121,38 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
                 .into(ft)
         }
         when (order!!.status) {
-            "7" -> {
+            "7" , "0" -> {
                 binding.bottomSheetLayout.btn_start.visibility = View.VISIBLE
             }
             "1" -> {
-                binding.bottomSheetLayout.status.text = "Menuju Waypoint"
+                when(order!!.kategori){
+                    "resto" -> {
+                        binding.contentBottom.status.text = "Menuju lokasi resto"
+                    }
+                    else ->{
+                        binding.contentBottom.status.text = "Menuju lokasi penjemputan"
+                    }
+                }
                 isCheckingWaypoint = true
                 isCheckingDestination = false
                 registerLocationUpdateReceiver()
                 startLocationUpdates()
             }
             "2" -> {
-                binding.bottomSheetLayout.status.text = "Sampai Waypoint"
+                when(order!!.kategori){
+                    "resto" -> {
+                        binding.contentBottom.status.text = "Driver sampai lokasi resto"
+                    }
+                    else ->{
+                        binding.contentBottom.status.text = "Driver sampai lokasi penjemputan"
+                    }
+                }
                 isCheckingWaypoint = false
                 isCheckingDestination = false
                 binding.bottomSheetLayout.btn_waypoint2.visibility = View.VISIBLE
             }
             "3" -> {
-                binding.bottomSheetLayout.status.text = "Menuju Destination"
+                binding.bottomSheetLayout.status.text = "Menuju Lokasi Tujuan"
                 isCheckingWaypoint = false
                 isCheckingDestination = true
                 registerLocationUpdateReceiver()
@@ -159,6 +173,7 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
                 checkWaypoint = true,
                 checkDestination = false
             )
+            updateStatusFirebase(1)
         }
         binding.bottomSheetLayout.btn_waypoint.setOnClickListener {
             updateStatus("2", status2.toString(), binding.bottomSheetLayout.btn_waypoint,
@@ -168,6 +183,7 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
             handler.removeCallbacksAndMessages(null)
             unregisterReceiver(locationUpdateReceiver)
             binding.bottomSheetLayout.btn_waypoint2.visibility = View.VISIBLE
+            updateStatusFirebase(2)
 
         }
         binding.bottomSheetLayout.btn_waypoint2.setOnClickListener {
@@ -177,12 +193,14 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
                 checkWaypoint = false,
                 checkDestination = true
             )
+            updateStatusFirebase(3)
         }
         binding.bottomSheetLayout.btn_sampai.setOnClickListener {
             updateStatus("4", "Sampai Lokasi Tujuan", binding.bottomSheetLayout.btn_sampai,
                 checkWaypoint = false,
                 checkDestination = false
             )
+            updateStatusFirebase(4)
         }
         binding.bottomSheetLayout.chat.setOnClickListener {
             startActivity<ChatActivity>("order" to intent.getStringExtra("order"))
@@ -234,10 +252,12 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 if (dataSnapshot.exists()) {
                     // Referensi sudah berisi data, maka lakukan update
-                    reference.setValue(locationData)
+                    reference.child("latitude").setValue(latitude)
+                    reference.child("longitude").setValue(longitude)
                 } else {
                     // Referensi kosong, maka buat entri baru
-                    reference.setValue(locationData)
+                    reference.child("latitude").setValue(latitude)
+                    reference.child("longitude").setValue(longitude)
                 }
             }
 
@@ -300,6 +320,14 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
         val packageManager = context.packageManager
         val activities = packageManager.queryBroadcastReceivers(intent, 0)
         return activities.size > 0
+    }
+
+    private fun updateStatusFirebase(status: Int){
+        val database = FirebaseDatabase.getInstance()
+        val reference = database.getReference("perjalanan_pengemudi").child(sessionManager.getId().toString())
+        // Buat objek data yang ingin Anda perbarui
+        reference.child("status").setValue(status)
+
     }
     private fun updateStatus(status: String, nama: String, button: Button, checkWaypoint: Boolean, checkDestination: Boolean){
         api.updateStatusOrder(order!!.idOrder.toString(), status).enqueue(object :

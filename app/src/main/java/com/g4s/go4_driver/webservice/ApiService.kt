@@ -13,6 +13,7 @@ interface ApiService {
         @Field("fcm") fcm: String
     ): Call<ResponseLogin>
     // update password
+    @FormUrlEncoded
     @POST("update-password")
     fun updatePassword(
         @Field("id") id: String,

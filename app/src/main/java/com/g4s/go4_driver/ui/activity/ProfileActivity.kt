@@ -49,7 +49,7 @@ class ProfileActivity : AppCompatActivity() {
         }
         binding.logout.setOnClickListener {
             val builder = AlertDialog.Builder(this)
-            builder.setMessage("Logout ? ")
+            builder.setMessage("Yakin Ingin Keluar")
             builder.setPositiveButton("Ok") { dialog, which ->
                 sessionManager.clearSession()
                 startActivity<LoginActivity>()
@@ -57,7 +57,7 @@ class ProfileActivity : AppCompatActivity() {
                 this.finish()
             }
 
-            builder.setNegativeButton("Cancel ?") { dialog, which ->
+            builder.setNegativeButton("Cancel") { dialog, which ->
                 dialog.dismiss()
             }
 

@@ -3,6 +3,9 @@ package com.g4s.go4_driver.ui.activity
 import android.app.ProgressDialog
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.InputType
+import android.view.MotionEvent
+import android.widget.EditText
 import androidx.databinding.DataBindingUtil
 import com.g4s.go4_driver.R
 import com.g4s.go4_driver.databinding.ActivityLoginBinding
@@ -32,6 +35,16 @@ class LoginActivity : AppCompatActivity(), AnkoLogger {
         binding.lifecycleOwner = this
         progressDialog = ProgressDialog(this)
         sessionManager = SessionManager(this)
+        binding.edtPassword.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                if (event.rawX >= (binding.edtPassword.right - binding.edtPassword.compoundDrawables[2].bounds.width())) {
+                    // Gambar mata terbuka diklik
+                    togglePasswordVisibility(binding.edtPassword)
+                    return@setOnTouchListener true
+                }
+            }
+            false
+        }
         binding.btnlogin.setOnClickListener {
             val email = binding.edtEmail.text.toString().trim()
             val password = binding.edtPassword.text.toString().trim()
@@ -110,6 +123,18 @@ class LoginActivity : AppCompatActivity(), AnkoLogger {
 
             }
         })
+    }
+
+    private fun togglePasswordVisibility(editText: EditText) {
+        if (editText.inputType == (InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
+            editText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            editText.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_eye_hide, 0)
+        } else {
+            editText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            editText.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_eye_show, 0)
+        }
+        // Set kursor ke akhir teks
+        editText.setSelection(editText.text.length)
     }
 
     override fun onStart() {

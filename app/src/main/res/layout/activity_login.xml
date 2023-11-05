@@ -49,11 +49,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            app:suffixText="show"
-            app:suffixTextColor="@color/primary_color"
             android:hint="Password"
             app:hintTextColor="@color/grey2"
             app:boxStrokeColor="@color/grey2"
+            app:passwordToggleEnabled="true"
+            app:passwordToggleTint="@color/primary_color"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
