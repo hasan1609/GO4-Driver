@@ -131,12 +131,8 @@ class HomeFragment : Fragment(), AnkoLogger, OnMapReadyCallback {
         }
         binding.statusDriver.setOnClickListener {
             if (isServiceRunning(LocationService::class.java)) {
-                loading(true)
                 // Layanan sedang berjalan, berarti kita akan mematikan layanan
-                stopLocationService()
-                binding.statusDriver.setImageResource(R.drawable.ic_switch_off)
-                binding.txtStatus.text = "Off"
-                binding.txtStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.grey))
+                deleteLocationDataFromDatabase()
             } else {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     // Untuk Android versi 10 (Q) dan di atasnya, periksa ketersediaan izin background location
@@ -187,27 +183,45 @@ class HomeFragment : Fragment(), AnkoLogger, OnMapReadyCallback {
         loading(false)
     }
 
-    private fun stopLocationService() {
-        if (locationServiceIntent != null) {
-            locationServiceIntent?.action = "STOP_LOCATION_SERVICE"
-            requireActivity().stopService(locationServiceIntent)
-            deleteLocationDataFromDatabase()
-            loading(false)
-        }
-    }
-
     private fun deleteLocationDataFromDatabase() {
+        loading(true)
         val database = FirebaseDatabase.getInstance()
-        val cartReference = database.reference.child("driver_active").child(sessionManager.getId().toString())
-        cartReference.removeValue()
-            .addOnSuccessListener {
-                loading(false)
-                toast("Berhasil mematikan")
+        val driverRef = database.reference.child("driver_active").child(sessionManager.getId().toString())
+
+        driverRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    val status = dataSnapshot.child("status").getValue(String::class.java)
+                    if (status == "active") {
+
+                        if (locationServiceIntent != null) {
+                            driverRef.removeValue()
+                                .addOnSuccessListener {
+                                    loading(false)
+                                    locationServiceIntent?.action = "STOP_LOCATION_SERVICE"
+                                    requireActivity().stopService(locationServiceIntent)
+                                    binding.statusDriver.setImageResource(R.drawable.ic_switch_off)
+                                    binding.txtStatus.text = "Off"
+                                    binding.txtStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.grey))
+                                    toast("Berhasil mematikan")
+                                }
+                                .addOnFailureListener { exception ->
+                                    loading(false)
+                                    toast("gagal mematikan")
+                                }
+                        }
+                    } else {
+                        loading(false)
+                        toast("Maaf Masih Ada Order Aktif")
+                    }
+                }
             }
-            .addOnFailureListener { exception ->
+
+            override fun onCancelled(error: DatabaseError) {
                 loading(false)
-                toast("gagal mematikan")
             }
+        })
+        loading(false)
     }
 
     private fun requestBackgroundLocationPermission() {

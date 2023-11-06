@@ -393,6 +393,16 @@
                         android:textSize="17sp"
                         android:textStyle="bold" />
                 </LinearLayout>
+                <Button
+                    android:id="@+id/btn_selesai"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Selesai"
+                    android:layout_marginHorizontal="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="15dp"
+                    android:layout_alignParentBottom="true"
+                    android:visibility="gone"/>
             </RelativeLayout>
 
         </androidx.core.widget.NestedScrollView>

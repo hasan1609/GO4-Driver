@@ -42,6 +42,7 @@ import org.greenrobot.eventbus.EventBus
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 import org.jetbrains.anko.startActivity
+import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.toast
 import retrofit2.Call
 import retrofit2.Callback
@@ -162,7 +163,6 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
                 binding.bottomSheetLayout.status.text = "Sampai Tujuan"
                 isCheckingWaypoint = false
                 isCheckingDestination = false
-//                binding.bottomSheetLayout.btn_selesai.visibility = View.VISIBLE
             }
         }
         binding.bottomSheetLayout.nama.text = order!!.customer!!.nama
@@ -204,6 +204,9 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
         }
         binding.bottomSheetLayout.chat.setOnClickListener {
             startActivity<ChatActivity>("order" to intent.getStringExtra("order"))
+        }
+        binding.bottomSheetLayout.btn_detail_order.setOnClickListener {
+            startActivity<DetailRiwayatOrderActivity>("idOrder" to order!!.idOrder.toString())
         }
     }
 
@@ -321,7 +324,6 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
         val activities = packageManager.queryBroadcastReceivers(intent, 0)
         return activities.size > 0
     }
-
     private fun updateStatusFirebase(status: Int){
         val database = FirebaseDatabase.getInstance()
         val reference = database.getReference("perjalanan_pengemudi").child(sessionManager.getId().toString())
@@ -330,7 +332,7 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
 
     }
     private fun updateStatus(status: String, nama: String, button: Button, checkWaypoint: Boolean, checkDestination: Boolean){
-        api.updateStatusOrder(order!!.idOrder.toString(), status).enqueue(object :
+        api.updateStatusOrder(order!!.idOrder.toString(), status, sessionManager.getId().toString()).enqueue(object :
             Callback<ResponsePostData> {
             override fun onResponse(
                 call: Call<ResponsePostData>,
@@ -361,6 +363,7 @@ class TrackingOrderActivity : AppCompatActivity(), AnkoLogger, OnMapReadyCallbac
             }
         })
     }
+
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         val markerTujuan = BitmapDescriptorFactory.fromResource(R.drawable.ic_pinmap)

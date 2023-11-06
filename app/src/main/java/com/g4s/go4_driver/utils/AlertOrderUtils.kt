@@ -81,7 +81,7 @@ class AlertOrderUtils(private val context: Context){
 
     private fun updateStatus(id: String, status: String, orderLog: OrderLogModel){
         loading(true)
-        api.updateStatusOrder(id, status).enqueue(object :
+        api.updateStatusOrder(id, status, orderLog.driverId.toString()).enqueue(object :
             Callback<ResponsePostData> {
             override fun onResponse(
                 call: Call<ResponsePostData>,

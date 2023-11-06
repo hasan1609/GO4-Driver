@@ -14,7 +14,10 @@ import androidx.navigation.NavDeepLinkBuilder
 import com.g4s.go4_driver.ui.activity.MainActivity
 import com.g4s.go4_driver.R
 import com.google.android.gms.location.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class LocationService : Service() {
 
@@ -37,7 +40,7 @@ class LocationService : Service() {
                     val location = it.lastLocation
                     if (location != null) {
                         // Simpan data lokasi ke Firebase Realtime Database
-                        saveLocationToDatabase(location.latitude, location.longitude)
+                        updateLocationToDatabase(location.latitude, location.longitude)
 
                         // Update the notification with the new location data
                         val notification: Notification = buildNotification(location.latitude, location.longitude)
@@ -60,14 +63,7 @@ class LocationService : Service() {
                 idUser = intent.getStringExtra("ID_USER_EXTRA")
                 fcmUser = intent.getStringExtra("FCM_USER_EXTRA")
                 type = intent.getStringExtra("TYPE_USER_EXTRA")
-
-                // Memulai layanan setelah izin lokasi diberikan dan GPS diaktifkan
-                startLocationUpdates()
-                val notification: Notification = buildNotification(0.0, 0.0)
-                startForeground(123, notification)
-
-                // Update user data with status and kodeFcm
-                updateUserData(idUser, type.toString(), fcmUser.toString()) // Ganti nilai status sesuai kebutuhan
+                cekData(idUser, type.toString(), fcmUser.toString()) // Ganti nilai status sesuai kebutuhan
             }
             "STOP_LOCATION_SERVICE" -> {
                 // Menghentikan layanan jika tindakan "STOP_LOCATION_SERVICE" diterima
@@ -121,7 +117,7 @@ class LocationService : Service() {
         fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
-    private fun saveLocationToDatabase(latitude: Double, longitude: Double) {
+    private fun updateLocationToDatabase(latitude: Double, longitude: Double) {
         // Simpan data lokasi ke Firebase Realtime Database
         val database = FirebaseDatabase.getInstance()
         val locationRef = database.getReference("driver_active").child(idUser!!)
@@ -161,10 +157,29 @@ class LocationService : Service() {
         return notification
     }
 
-    private fun updateUserData(idUser: String?, type: String, fcm: String) {
+    private fun cekData(idUser: String?, type: String, fcm: String) {
         val database = FirebaseDatabase.getInstance()
         val userRef = database.getReference("driver_active").child(idUser!!)
+        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    // Data sudah ada di Firebase, tidak perlu melakukan apa pun
+                    startLocationUpdates()
+                } else {
+                    // Data belum ada di Firebase, simpan data baru
+                    saveLocationInFirebase(idUser, type, fcm)
+                }
+            }
 
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Penanganan kesalahan saat mengambil data dari Firebase
+            }
+        })
+    }
+
+    private fun saveLocationInFirebase(idUser: String?, type: String, fcm: String) {
+        val database = FirebaseDatabase.getInstance()
+        val userRef = database.getReference("driver_active").child(idUser!!)
         val userData = HashMap<String, Any>()
         userData["latitude"] = 0.0 // Nilai awal latitude
         userData["longitude"] = 0.0 // Nilai awal longitude
@@ -172,13 +187,12 @@ class LocationService : Service() {
         userData["type"] = type
         userData["fcm"] = fcm
 
-        userRef.updateChildren(userData)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    // Pembaharuan data pengguna berhasil
-                } else {
-                    // Pembaharuan data pengguna gagal
-                }
-            }
+        // Simpan data lokasi baru di Firebase
+        userRef.setValue(userData).addOnSuccessListener {
+            val notification: Notification = buildNotification(0.0, 0.0)
+            startLocationUpdates()
+        }.addOnFailureListener {
+            // Penanganan kesalahan jika data tidak dapat disimpan
+        }
     }
 }
